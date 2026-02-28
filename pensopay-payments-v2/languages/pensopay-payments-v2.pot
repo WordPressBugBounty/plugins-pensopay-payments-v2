@@ -1,0 +1,669 @@
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: pensopay Payments v2\n"
+"POT-Creation-Date: 2025-06-15 19:01+0200\n"
+"PO-Revision-Date: 2025-03-31 14:24+0200\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+"X-Generator: Poedit 3.6\n"
+"X-Poedit-Basepath: ..\n"
+"X-Poedit-Flags-xgettext: --add-comments=translators:\n"
+"X-Poedit-WPHeader: pensopay.php\n"
+"X-Poedit-SourceCharset: UTF-8\n"
+"X-Poedit-KeywordsList: "
+"__;_e;_n:1,2;_x:1,2c;_ex:1,2c;_nx:4c,1,2;esc_attr__;esc_attr_e;esc_attr_x:1,2c;esc_html__;esc_html_e;esc_html_x:1,2c;_n_noop:1,2;_nx_noop:3c,1,2;__ngettext_noop:1,2\n"
+"X-Poedit-SearchPath-0: .\n"
+"X-Poedit-SearchPathExcluded-0: *.min.js\n"
+"X-Poedit-SearchPathExcluded-1: tests/node_modules\n"
+
+#. translators: %s: order id
+#: includes/abstracts/abstract-wc-pensopay-payment-gateway.php:113
+#, php-format
+msgid "Invalid payment link received from API for order -parent- #%1$s"
+msgstr ""
+
+#. translators: %s: order id
+#: includes/abstracts/abstract-wc-pensopay-payment-gateway.php:147
+#, php-format
+msgid "No transaction ID found for order: %s"
+msgstr ""
+
+#. translators: %s: refunded amount
+#: includes/abstracts/abstract-wc-pensopay-payment-gateway.php:164
+#, php-format
+msgid "Order refunded successfully. Refunded amount: %s"
+msgstr ""
+
+#: includes/abstracts/abstract-wc-pensopay-payment-gateway.php:167
+msgid "Order is in invalid state for refund."
+msgstr ""
+
+#: includes/abstracts/abstract-wc-pensopay-payment-gateway.php:171
+msgid "Refund failed"
+msgstr ""
+
+#. translators: %s: callback id
+#: includes/abstracts/abstract-wc-pensopay-payment-gateway.php:205
+#, php-format
+msgid "Payment authorized. Transaction ID: %s"
+msgstr ""
+
+#. translators: %1$s: currency, %2$s: amount, %3$s callback id
+#: includes/abstracts/abstract-wc-pensopay-payment-gateway.php:210
+#, php-format
+msgid "Payment captured. Amount: %1$s %2$s. Transaction ID: %3$s"
+msgstr ""
+
+#: includes/abstracts/abstract-wc-pensopay-payment-gateway.php:215
+msgid "Payment completed."
+msgstr ""
+
+#. translators: %s: captured amount
+#: includes/abstracts/abstract-wc-pensopay-payment-gateway.php:573
+#, php-format
+msgid "Payment captured automatically. Captured amount: %s"
+msgstr ""
+
+#: includes/abstracts/abstract-wc-pensopay-payment-gateway.php:580
+msgid "Capture failed"
+msgstr ""
+
+#: includes/abstracts/abstract-wc-pensopay-payment-gateway.php:603
+msgid "Cancel failed"
+msgstr ""
+
+#. translators: %s: order id
+#: includes/admin/admin-order-actions.php:115
+#, php-format
+msgid "Invalid payment link received from API for order #%s"
+msgstr ""
+
+#. translators: %s: payment link
+#: includes/admin/admin-order-actions.php:128
+#, php-format
+msgid "Payment link manually created from backend: %s"
+msgstr ""
+
+#: includes/admin/admin-order-actions.php:159
+#: includes/admin/order-table/order-table-transaction-data.php:134
+#: includes/admin/order-table/order-table-transaction-data.php:147
+msgid "pensopay: Create payment link"
+msgstr ""
+
+#: includes/admin/order-table/order-table-transaction-data.php:57
+msgid "Payment"
+msgstr ""
+
+#: includes/admin/order-table/views/html-order-table-transaction-data.php:5
+#: views/html-order-table-transaction-data.php:5
+msgid "ID"
+msgstr ""
+
+#: includes/admin/order-table/views/html-order-table-transaction-data.php:9
+#: views/html-order-table-transaction-data.php:9
+msgid "Order ID"
+msgstr ""
+
+#: includes/admin/order-table/views/html-order-table-transaction-data.php:13
+#: views/html-order-table-transaction-data.php:13
+msgid "Method"
+msgstr ""
+
+#: includes/admin/pensopay-settings.php:9
+#: includes/emails/payment-link-email.php:94 includes/methods/anyday.php:35
+#: includes/methods/applepay.php:45 includes/methods/googlepay.php:45
+#: includes/methods/klarna.php:36 includes/methods/mobilepay.php:35
+#: includes/methods/swish.php:45 includes/methods/viabill.php:35
+msgid "Enable/Disable"
+msgstr ""
+
+#: includes/admin/pensopay-settings.php:10
+msgid "Enable pensopay Payment"
+msgstr ""
+
+#: includes/admin/pensopay-settings.php:15
+#: includes/admin/pensopay-settings.php:16
+msgid "API Key"
+msgstr ""
+
+#: includes/admin/pensopay-settings.php:18
+msgid "Get your API key and the private key below from your pensopay account."
+msgstr ""
+
+#: includes/admin/pensopay-settings.php:22
+#: includes/admin/pensopay-settings.php:23
+msgid "Private Key"
+msgstr ""
+
+#: includes/admin/pensopay-settings.php:25
+msgid ""
+"<span style=\"color:red;font-weight:bold;\">NOTICE: WHEN TEST PAYMENTS ARE "
+"ENABLED, LIVE PAYMENTS WILL NOT WORK</span>"
+msgstr ""
+
+#: includes/admin/pensopay-settings.php:29
+msgid "Enable test mode"
+msgstr ""
+
+#: includes/admin/pensopay-settings.php:31
+#: includes/admin/pensopay-settings.php:65
+#: includes/admin/pensopay-settings.php:72
+#: includes/admin/pensopay-settings.php:79
+#: includes/admin/pensopay-settings.php:87
+msgid "Enable"
+msgstr ""
+
+#: includes/admin/pensopay-settings.php:32
+msgid "When enabled test mode is active."
+msgstr ""
+
+#: includes/admin/pensopay-settings.php:37 includes/methods/anyday.php:41
+#: includes/methods/applepay.php:51 includes/methods/googlepay.php:51
+#: includes/methods/klarna.php:42 includes/methods/mobilepay.php:41
+#: includes/methods/swish.php:51 includes/methods/viabill.php:41
+msgid "Title"
+msgstr ""
+
+#: includes/admin/pensopay-settings.php:39 includes/methods/anyday.php:43
+#: includes/methods/applepay.php:53 includes/methods/googlepay.php:53
+#: includes/methods/klarna.php:44 includes/methods/mobilepay.php:43
+#: includes/methods/swish.php:53 includes/methods/viabill.php:43
+msgid "This controls the title which the user sees during checkout."
+msgstr ""
+
+#: includes/admin/pensopay-settings.php:40
+msgid "Credit Card"
+msgstr ""
+
+#: includes/admin/pensopay-settings.php:44 includes/methods/anyday.php:48
+#: includes/methods/applepay.php:58 includes/methods/googlepay.php:58
+#: includes/methods/klarna.php:49 includes/methods/mobilepay.php:48
+#: includes/methods/swish.php:58 includes/methods/viabill.php:48
+msgid "Description"
+msgstr ""
+
+#: includes/admin/pensopay-settings.php:46 includes/methods/anyday.php:50
+#: includes/methods/applepay.php:60 includes/methods/googlepay.php:60
+#: includes/methods/klarna.php:51 includes/methods/mobilepay.php:50
+#: includes/methods/swish.php:60 includes/methods/viabill.php:50
+msgid "This controls the description which the user sees during checkout."
+msgstr ""
+
+#: includes/admin/pensopay-settings.php:47
+msgid "Pay with your credit card via pensopay."
+msgstr ""
+
+#: includes/admin/pensopay-settings.php:51
+msgid "Logging"
+msgstr ""
+
+#: includes/admin/pensopay-settings.php:52
+msgid "Log debug messages"
+msgstr ""
+
+#: includes/admin/pensopay-settings.php:54
+msgid "Save debug messages to the WooCommerce System Status log."
+msgstr ""
+
+#: includes/admin/pensopay-settings.php:60
+msgid "Autocapture settings"
+msgstr ""
+
+#: includes/admin/pensopay-settings.php:63
+msgid "Physical products"
+msgstr ""
+
+#: includes/admin/pensopay-settings.php:66
+msgid "Automatically capture payments on physical products."
+msgstr ""
+
+#: includes/admin/pensopay-settings.php:70
+msgid "Virtual products"
+msgstr ""
+
+#: includes/admin/pensopay-settings.php:73
+msgid ""
+"Automatically capture payments on virtual products. If the order contains "
+"both physical and virtual products, this setting will be overwritten by the "
+"default setting above."
+msgstr ""
+
+#: includes/admin/pensopay-settings.php:77
+msgid "Capture payment on order completion"
+msgstr ""
+
+#: includes/admin/pensopay-settings.php:80
+msgid ""
+"When enabled payments will automatically be captured when order state is set "
+"to \"Complete\"."
+msgstr ""
+
+#: includes/admin/pensopay-settings.php:85
+msgid "Complete order on capture callbacks"
+msgstr ""
+
+#: includes/admin/pensopay-settings.php:88
+msgid ""
+"Orders will be automatically completed when capture callbacks are sent to "
+"WooCommerce. Callbacks are sent by pensopay when the payment is successfully "
+"captured from the shop. Keep disabled to manually complete orders."
+msgstr ""
+
+#: includes/admin/pensopay-settings.php:93
+msgid "Payment methods"
+msgstr ""
+
+#: includes/admin/pensopay-settings.php:96
+msgid "All available"
+msgstr ""
+
+#: includes/admin/pensopay-settings.php:97
+msgid "All credit cards"
+msgstr ""
+
+#: includes/admin/pensopay-settings.php:98
+msgid "As specified"
+msgstr ""
+
+#: includes/admin/pensopay-settings.php:103
+msgid "Specify payment methods"
+msgstr ""
+
+#: includes/admin/pensopay-settings.php:107
+msgid "Credit card icons maximum height"
+msgstr ""
+
+#: includes/admin/pensopay-settings.php:109
+msgid ""
+"Set the maximum pixel height of the credit card icons shown on the frontend."
+msgstr ""
+
+#: includes/admin/pensopay-settings.php:114
+msgid "Credit card icons"
+msgstr ""
+
+#: includes/admin/pensopay-settings.php:116
+msgid ""
+"Choose the card icons you wish to show next to the pensopay payment option "
+"in your shop."
+msgstr ""
+
+#: includes/admin/pensopay-settings.php:120
+msgid "Select icons"
+msgstr ""
+
+#: includes/emails/payment-link-email.php:13
+msgid "Payment link created"
+msgstr ""
+
+#: includes/emails/payment-link-email.php:14
+msgid "This e-mail is sent upon manual payment link creation by a shop admin."
+msgstr ""
+
+#: includes/emails/payment-link-email.php:96
+msgid "Enable this email notification"
+msgstr ""
+
+#: includes/emails/payment-link-email.php:100
+msgid "Subject"
+msgstr ""
+
+#. translators: %s: list of placeholders
+#: includes/emails/payment-link-email.php:104
+#: includes/emails/payment-link-email.php:113
+#, php-format
+msgid "Available placeholders: %s"
+msgstr ""
+
+#: includes/emails/payment-link-email.php:109
+msgid "Email heading"
+msgstr ""
+
+#: includes/emails/payment-link-email.php:118
+msgid "Email type"
+msgstr ""
+
+#: includes/emails/payment-link-email.php:120
+msgid "Choose which format of email to send."
+msgstr ""
+
+#: includes/emails/payment-link-email.php:136
+msgid "Payment link for your order ({order_number})"
+msgstr ""
+
+#: includes/emails/payment-link-email.php:146
+msgid "This is your payment link"
+msgstr ""
+
+#. translators: %s: log loc
+#: includes/exceptions.php:71
+#, php-format
+msgid ""
+"An error occurred. For more information check out the <strong>%s</strong> "
+"logs inside <strong>WooCommerce -> System Status -> Logs</strong>."
+msgstr ""
+
+#: includes/gateway-pensopay.php:12
+msgid "pensopay credit card"
+msgstr ""
+
+#: includes/gateway/transaction.php:26
+msgid "Transaction ID cannot be empty"
+msgstr ""
+
+#: includes/helpers/transactions.php:61
+msgid "Order does not need payment"
+msgstr ""
+
+#: includes/methods/anyday.php:15
+msgid "Anyday"
+msgstr ""
+
+#: includes/methods/anyday.php:23
+msgid "Accept Anyday Split payments through pensopay"
+msgstr ""
+
+#: includes/methods/anyday.php:36
+msgid "Enable ANYDAY Split"
+msgstr ""
+
+#: includes/methods/anyday.php:44
+msgid "ANYDAY Split (pensopay)"
+msgstr ""
+
+#: includes/methods/anyday.php:51
+msgid "Pay with ANYDAY Split"
+msgstr ""
+
+#: includes/methods/applepay.php:15
+msgid "Apple Pay"
+msgstr ""
+
+#: includes/methods/applepay.php:23
+msgid "Accept ApplePay payments through pensopay"
+msgstr ""
+
+#: includes/methods/applepay.php:46
+msgid "Enable ApplePay"
+msgstr ""
+
+#: includes/methods/applepay.php:54
+msgid "ApplePay (pensopay)"
+msgstr ""
+
+#: includes/methods/applepay.php:61
+msgid "Pay with ApplePay"
+msgstr ""
+
+#: includes/methods/googlepay.php:15
+msgid "Google Pay"
+msgstr ""
+
+#: includes/methods/googlepay.php:23
+msgid "Accept GooglePay payments through pensopay"
+msgstr ""
+
+#: includes/methods/googlepay.php:46
+msgid "Enable GooglePay"
+msgstr ""
+
+#: includes/methods/googlepay.php:54
+msgid "GooglePay"
+msgstr ""
+
+#: includes/methods/googlepay.php:61
+msgid "Pay with GooglePay"
+msgstr ""
+
+#: includes/methods/klarna.php:15
+msgid "Klarna Payments"
+msgstr ""
+
+#: includes/methods/klarna.php:23
+msgid "Accept Klarna Payments through pensopay"
+msgstr ""
+
+#: includes/methods/klarna.php:37
+msgid "Enable Klarna Payments"
+msgstr ""
+
+#: includes/methods/klarna.php:45
+msgid "Klarna Payments (pensopay)"
+msgstr ""
+
+#: includes/methods/klarna.php:52
+msgid "Pay with Klarna Payments"
+msgstr ""
+
+#: includes/methods/mobilepay.php:15
+msgid "MobilePay"
+msgstr ""
+
+#: includes/methods/mobilepay.php:23
+msgid "Accept MobilePay payments through pensopay"
+msgstr ""
+
+#: includes/methods/mobilepay.php:36
+msgid "Enable MobilePay"
+msgstr ""
+
+#: includes/methods/mobilepay.php:44
+msgid "MobilePay (pensopay)"
+msgstr ""
+
+#: includes/methods/mobilepay.php:51
+msgid "Betal med MobilePay"
+msgstr ""
+
+#: includes/methods/swish.php:15
+msgid "Swish"
+msgstr ""
+
+#: includes/methods/swish.php:23
+msgid "Accept Swish payments through pensopay"
+msgstr ""
+
+#: includes/methods/swish.php:46
+msgid "Enable Swish"
+msgstr ""
+
+#: includes/methods/swish.php:54
+msgid "Swish (pensopay)"
+msgstr ""
+
+#: includes/methods/swish.php:61
+msgid "Pay with Swish"
+msgstr ""
+
+#: includes/methods/viabill.php:15
+msgid "Viabill"
+msgstr ""
+
+#: includes/methods/viabill.php:23
+msgid "Accept ViaBill payments through pensopay"
+msgstr ""
+
+#: includes/methods/viabill.php:36
+msgid "Enable ViaBill"
+msgstr ""
+
+#: includes/methods/viabill.php:44
+msgid "ViaBill (pensopay)"
+msgstr ""
+
+#: includes/methods/viabill.php:51
+msgid "Pay with ViaBill"
+msgstr ""
+
+#. translators: %1: woocommerce version
+#: pensopay.php:26
+#, php-format
+msgid ""
+"pensopay requires WooCommerce %1$s or greater to be installed and active."
+msgstr ""
+
+#: pensopay.php:247
+msgid "View Documentation"
+msgstr ""
+
+#: pensopay.php:247
+msgid "Docs"
+msgstr ""
+
+#: pensopay.php:248
+msgid "Open a support request at wordpress.org"
+msgstr ""
+
+#: pensopay.php:248
+msgid "Support"
+msgstr ""
+
+#: pensopay.php:266
+msgid "View pensopay settings"
+msgstr ""
+
+#: pensopay.php:266
+msgid "Settings"
+msgstr ""
+
+#: pensopay.php:285 pensopay.php:286
+msgid "pensopay Payment"
+msgstr ""
+
+#: pensopay.php:321
+msgid ""
+"Note! Refunding the order like this will refund the entire order. If you "
+"want to refund partially or specific items, use the refund button on the "
+"bottom of the items list. Do you want to refund the entire order?"
+msgstr ""
+
+#. translators: %s: Customer first name
+#: templates/woocommerce/emails/customer-pensopay-payment-link.php:27
+#: templates/woocommerce/emails/plain/customer-pensopay-payment-link.php:25
+#, php-format
+msgid "Hi %s,"
+msgstr ""
+
+#: templates/woocommerce/emails/customer-pensopay-payment-link.php:29
+#: templates/woocommerce/emails/plain/customer-pensopay-payment-link.php:27
+msgid "Thank you for your order."
+msgstr ""
+
+#. translators: %s: Site title
+#. translators: %s: Payment link to pay the order
+#: templates/woocommerce/emails/customer-pensopay-payment-link.php:32
+#: templates/woocommerce/emails/plain/customer-pensopay-payment-link.php:30
+#, php-format
+msgid "Use the following link to pay and complete your order: %s"
+msgstr ""
+
+#: templates/woocommerce/emails/customer-pensopay-payment-link.php:56
+#: templates/woocommerce/emails/plain/customer-pensopay-payment-link.php:55
+msgid "Thanks for shopping with us."
+msgstr ""
+
+#: views/html-order-actions.php:4
+msgid "Current payment state"
+msgstr ""
+
+#: views/html-order-actions.php:11
+msgid "Actions"
+msgstr ""
+
+#: views/html-order-actions.php:15 views/html-order-actions.php:46
+msgid "You are about to CAPTURE this payment"
+msgstr ""
+
+#. translators:
+#. %s: payment amount
+#. %s: payment currency
+#.
+#: views/html-order-actions.php:21
+#, php-format
+msgid "Capture Full Amount (%1$s %2$s)"
+msgstr ""
+
+#: views/html-order-actions.php:29
+msgid "Original balance"
+msgstr ""
+
+#: views/html-order-actions.php:34
+msgid "Remaining balance"
+msgstr ""
+
+#: views/html-order-actions.php:39
+msgid "Capture amount"
+msgstr ""
+
+#: views/html-order-actions.php:46
+msgid "Capture Specified Amount"
+msgstr ""
+
+#: views/html-order-actions.php:52
+msgid "You are about to CANCEL this payment"
+msgstr ""
+
+#: views/html-order-actions.php:52
+msgid "Cancel"
+msgstr ""
+
+#: views/html-order-actions.php:57
+msgid "Transaction ID"
+msgstr ""
+
+#: views/html-order-actions.php:66
+msgid "Transaction Order ID"
+msgstr ""
+
+#: views/html-order-actions.php:86
+msgid "Payment ID"
+msgstr ""
+
+#: views/html-order-actions.php:91
+msgid "Payment Link"
+msgstr ""
+
+#: views/html-order-table-transaction-data.php:23
+msgid "This order has been paid with test card data!"
+msgstr ""
+
+#: views/html-order-table-transaction-data.php:25
+msgid "Test"
+msgstr ""
+
+#: views/html-order-table-transaction-data.php:31
+msgid ""
+"NB: The transaction data is served from cached results. Click to view the "
+"order and update the cached data."
+msgstr ""
+
+#: views/html-order-table-transaction-data.php:32
+msgid "Cached"
+msgstr ""
+
+#. Plugin Name of the plugin/theme
+msgid "pensopay Payments v2 - CURRENT VERSION WITHOUT SUBSCRIPTIONS"
+msgstr ""
+
+#. Plugin URI of the plugin/theme
+msgid "http://wordpress.org/plugins/pensopay/"
+msgstr ""
+
+#. Description of the plugin/theme
+msgid ""
+"Integrates your pensopay v2 payment gateway into your WooCommerce "
+"installation."
+msgstr ""
+
+#. Author of the plugin/theme
+msgid "pensopay"
+msgstr ""
+
+#. Author URI of the plugin/theme
+msgid "https://pensopay.com/"
+msgstr ""

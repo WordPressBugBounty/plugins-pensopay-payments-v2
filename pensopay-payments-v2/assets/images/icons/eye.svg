@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
+  <defs>
+    <radialGradient id="rainbowEye" cx="60" cy="60" r="60" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#FF5F6D"/>    <!-- bright red -->
+      <stop offset="15%" stop-color="#FFC371"/>   <!-- orange/yellow -->
+      <stop offset="30%" stop-color="#FFFC00"/>   <!-- yellow -->
+      <stop offset="45%" stop-color="#00FFB4"/>   <!-- teal -->
+      <stop offset="60%" stop-color="#00C3FF"/>   <!-- blue -->
+      <stop offset="75%" stop-color="#8B5CFF"/>   <!-- purple -->
+      <stop offset="90%" stop-color="#FF61A6"/>   <!-- pink -->
+      <stop offset="100%" stop-color="#FF5F6D"/>  <!-- red again for loop -->
+    </radialGradient>
+    <radialGradient id="rainbowPupil" cx="60" cy="60.583" r="14.409" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#0000FF"/>
+    </radialGradient>
+  </defs>
+  <path d="M60 19.09C22.382 19.09.053 60 .053 60S22.383 100.91 60 100.91 119.95 60 119.95 60 97.618 19.09 60 19.09zm0 65.32c-13.46 0-24.41-10.95-24.41-24.41S46.54 35.59 60 35.59 84.407 46.54 84.407 60s-10.95 24.41-24.41 24.41z" fill="url(#rainbowEye)"/>
+  <circle cy="60.583" cx="60" r="14.409" fill="url(#rainbowPupil)"/>
+</svg>

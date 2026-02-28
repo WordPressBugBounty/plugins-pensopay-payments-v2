@@ -1,0 +1,212 @@
+.pensopay-full-width {
+    width: 100%;
+}
+
+.pensopay_transaction_info .tag {
+    float: left;
+    display: inline-block;
+    padding: 7px 5px;
+    background-color: #e5e5e5;
+    color: #777;
+    font-size: 9px;
+    border-radius: 3px;
+    text-transform: uppercase;
+    line-height: 100%;
+}
+
+.wc-orders-list-table-shop_subscription .woocommerce-pensopay-order-transaction-data .tags {
+    margin-top: 5px;
+}
+
+.wc-orders-list-table-shop_subscription .woocommerce-pensopay-order-transaction-data tr td,
+.pensopay_transaction_info table tr td {
+    font-size: 11px;
+    color: #555;
+    padding: 0 !important;
+    line-height: 1.7em !important;
+}
+
+.wc-orders-list-table-shop_subscription .woocommerce-pensopay-order-transaction-data .tag,
+#pensopay-payments-v2-payment-actions .tag {
+    float: left;
+    display: inline-block;
+    padding: 9px 12px;
+    background-color: #e5e5e5;
+    color: #777;
+    font-size: 11px;
+    border-radius: 3px;
+    text-transform: uppercase;
+    line-height: 100%;
+    margin-top: -5px;
+}
+
+.wc-orders-list-table-shop_subscription .woocommerce-pensopay-order-transaction-data .tag.is-active,
+#pensopay-payments-v2-payment-actions .tag.is-authorize {
+    background: #c6e1c6;
+    color: #2c4700;
+}
+
+#pensopay-payments-v2-payment-actions .tag.is-captured {
+    background: #c8d7e1;
+    color: #003d66;
+}
+
+#pensopay-payments-v2-payment-actions .tag.is-refunded {
+    background: #c8d7e1;
+    color: #2e4453;
+}
+
+.wc-orders-list-table-shop_subscription .woocommerce-pensopay-order-transaction-data .tag.is-canceled,
+#pensopay-payments-v2-payment-actions .tag.is-canceled {
+    background-color: #ff00004f;
+    color: #5e0e0e;
+}
+
+.pensopay_transaction_info .tag {
+    margin-left: 2px;
+}
+
+.wc-orders-list-table-shop_subscription .woocommerce-pensopay-order-transaction-data .tag.is-pending,
+.pensopay_transaction_info .tag.is-test {
+    background: #ebe9a3;
+    color: #78790b;
+    font-weight: bold;
+}
+
+.pensopay_transaction_info .tag.is-authorize {
+    background: #c6e1c6;
+    color: #2c4700;
+}
+
+.pensopay_transaction_info .tag.is-capture {
+    background: #c8d7e1;
+    color: #003d66;
+}
+
+.pensopay_transaction_info .tag.is-refund {
+    background: #c8d7e1;
+    color: #2e4453;
+}
+
+.pensopay_transaction_info .tag.is-canceled {
+    background-color: #ff00004f;
+    color: #5e0e0e;
+}
+
+.pensopay-balance__label, .pensopay-balance__amount {
+    background-color: #f9f9f9;
+    box-sizing: border-box;
+    float: left;
+    padding: 7px 5px;
+    text-transform: uppercase;
+    font-size: 10px;
+    color: #8a8a8a;
+}
+
+.pensopay-balance__label {
+    font-weight: bold;
+    width: 55%;
+    border-right: 2.5px solid #FFF;
+}
+
+.pensopay-balance__amount {
+    border-right: 0;
+    width: 45%;
+    border-left: 2.5px solid #FFF;
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: -webkit-flex;
+    display: flex;
+}
+
+.pensopay-full-width .button {
+    width: 100%;
+    display: block;
+    text-align: center;
+    clear: both;
+}
+
+.pensopay-balance__currency {
+    margin-right: 10px;
+}
+
+.pp-full-width .button {
+    width: 100%;
+    display: block;
+    text-align: center;
+    clear: both;
+}
+
+.last {
+    margin-bottom: 10px;
+}
+
+#pensopay-balance__amount-field {
+    width: 100%;
+    font-size: 10px;
+    margin-top: -5px;
+    top: 3px;
+    position: relative;
+    min-height: auto;
+}
+
+/* Admin settings styling */
+th > [for^="woocommerce_pensopay_gateway_"] {
+    font-weight: normal !important;
+}
+
+.wc-settings-sub-title[id^="woocommerce_pensopay_gateway_"] {
+    text-decoration: underline;
+}
+
+h3[id^="woocommerce_pensopay_gateway_"] + table {
+    border: 1px solid gray;
+}
+
+h3[id^="woocommerce_pensopay_gateway_"] + table tr {
+    border-bottom: 1px solid gray;
+}
+
+h3[id^="woocommerce_pensopay_gateway_"] + table tr th {
+    border-right: 1px solid gray;
+    text-align: center;
+    vertical-align: middle;
+}
+
+h3[id^="woocommerce_pensopay_gateway_"] + table tr td {
+    margin-bottom: 0;
+}
+
+[id^="woocommerce_pensopay_gateway_private_key"],
+[id^="woocommerce_pensopay_gateway_api_key"] {
+    width: 100% !important;
+    max-width: 600px !important;
+}
+
+[id="woocommerce_pensopay_gateway__general"]::before,
+[id="woocommerce_pensopay_gateway__appearance"]::before,
+[id="woocommerce_pensopay_gateway__advanced"]::before,
+[id="woocommerce_pensopay_gateway__expert"]::before {
+    content: "";
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    vertical-align: middle;
+    margin-right: 5px;
+}
+
+[id="woocommerce_pensopay_gateway__general"]::before {
+    background: url('../../images/icons/gear-gray.svg') no-repeat center center;
+}
+
+[id="woocommerce_pensopay_gateway__appearance"]::before {
+    background: url('../../images/icons/eye.svg') no-repeat center center;
+}
+
+[id="woocommerce_pensopay_gateway__advanced"]::before {
+    background: url('../../images/icons/gear-orange.svg') no-repeat center center;
+}
+
+[id="woocommerce_pensopay_gateway__expert"]::before {
+    background: url('../../images/icons/gear-red.svg') no-repeat center center;
+}

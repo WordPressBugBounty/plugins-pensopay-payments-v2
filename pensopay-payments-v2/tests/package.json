@@ -1,0 +1,16 @@
+{
+  "name": "pensopay-payments",
+  "version": "1.0.0",
+  "description": "Tests for pensopay-payments-v2 woocommerce plugin",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "GPL-2.0-only",
+  "dependencies": {
+    "@playwright/test": "^1.56.1",
+    "dotenv": "^16.4.7",
+    "playwright": "^1.56.1"
+  }
+}
