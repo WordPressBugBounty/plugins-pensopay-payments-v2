@@ -79,9 +79,14 @@ class Pensopay_Payments_V2_Methods_Creditcard extends Pensopay_Payments_V2_Metho
 	public function scheduled_subscription_payment( $amount_to_charge, WC_Order $order ) {
 		if ( ( $order->get_payment_method() === $this->id ) && $order->needs_payment() ) {
 			$transaction = Pensopay_Api_Transaction::from_order( $order );
-			$transaction->authorize( $order->get_id(), (int) Pensopay_Payments_V2_Helpers_Price::multiply_price( $amount_to_charge, $order->get_currency() ) );
-			/* translators: %s: captured amount */
-			$order->add_order_note( sprintf( __( 'Subscription authorized automatically. Captured amount: %s', Pensopay_Payments_V2_Gateway::TEXT_DOMAIN ), wc_price( $amount_to_charge, [ 'currency' => $order->get_currency() ] ) ) );
+			$autocapture = Pensopay_Payments_V2_Helper_Utility::is_option_enabled( $this->get_autocapture_setting( $order ) );
+			$transaction->authorize(
+				$order->get_id(),
+				(int) Pensopay_Payments_V2_Helpers_Price::multiply_price( $amount_to_charge, $order->get_currency() ),
+				$autocapture
+			);
+			/* translators: %s: authorized amount */
+			$order->add_order_note( sprintf( __( 'Subscription payment authorized. Amount: %s', Pensopay_Payments_V2_Gateway::TEXT_DOMAIN ), wc_price( $amount_to_charge, [ 'currency' => $order->get_currency() ] ) ) );
 		}
 	}
 

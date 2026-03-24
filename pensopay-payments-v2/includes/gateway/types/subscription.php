@@ -10,7 +10,10 @@ class Pensopay_Api_Subscription extends Pensopay_Api_Transaction {
 	 * @throws Exception
 	 */
 	public function cancel() {
-		return self::post( sprintf( 'subscriptions/%s/cancel', $this->transaction_id ) );
+		$result = self::post( sprintf( 'subscriptions/%s/cancel', $this->transaction_id ) );
+		$this->fetch();
+		$this->cache_transaction();
+		return $result;
 	}
 
 	public function setPaymentId( $payment_id ) {
@@ -37,17 +40,53 @@ class Pensopay_Api_Subscription extends Pensopay_Api_Transaction {
 		return $this->resource_data;
 	}
 
+	/**
+	 * Fetch all payments for this subscription
+	 *
+	 * @throws Exception
+	 */
+	public function fetch_payments() {
+		return self::get( sprintf( 'subscriptions/%s/payments', $this->transaction_id ) );
+	}
+
+	/**
+	 * Get the card fee from the latest payment on this subscription
+	 *
+	 * @return int card fee in cents
+	 */
+	public function get_latest_payment_card_fee(): int {
+		try {
+			$response = $this->fetch_payments();
+			$payments = $response->data ?? [];
+
+			if ( empty( $payments ) ) {
+				return 0;
+			}
+
+			$latest = array_reduce( (array) $payments, function ( $carry, $payment ) {
+				if ( ! $carry || strtotime( $payment->created_at ) > strtotime( $carry->created_at ) ) {
+					return $payment;
+				}
+				return $carry;
+			} );
+
+			return (int) ( $latest->card_fee ?? 0 );
+		} catch ( \Exception $e ) {
+			return 0;
+		}
+	}
+
 	public function create( $params ) {
 		return self::post( 'subscriptions', $params );
 	}
 
-	public function authorize( $order_id, $amount ) {
+	public function authorize( $order_id, $amount, $autocapture = false ) {
 		$order      = wc_get_order( $order_id );
 
 		$postData = array(
 			'order_id'    => (string) $order_id,
 			'amount'      => $amount,
-			'autocapture' => false,
+			'autocapture' => $autocapture,
 			'variables'   => Pensopay_Payments_V2_Methods_Abstract::get_variables( wc_get_order( $order_id ) )
 		);
 

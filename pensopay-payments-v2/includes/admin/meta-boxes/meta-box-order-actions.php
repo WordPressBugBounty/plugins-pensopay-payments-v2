@@ -19,7 +19,9 @@ class Pensopay_Meta_Box_Order_Actions {
 
 				$transactionData      = $isSubscription ? $transaction->getPayment() : $transaction->get_data();
 				$status               = $transactionData->state;
-				$remaining            = $transactionData->amount - ( $transactionData->captured ?? 0 );
+				$card_fee             = (int) ( $transactionData->card_fee ?? 0 );
+				$total_amount         = $transactionData->amount + $card_fee;
+				$remaining            = $total_amount - ( $transactionData->captured ?? 0 );
 				$transaction_order_id = $transactionData->order_id ?? $order->get_order_number();
 
 				Pensopay_Payments_V2_Gateway::get_view( 'html-order-actions.php', [
@@ -29,6 +31,7 @@ class Pensopay_Meta_Box_Order_Actions {
 					'payment'                    => $isSubscription ? $transaction->getPayment() : $transaction,
 					'status'                     => $status ?? null,
 					'remaining'                  => $remaining ?? null,
+					'total_amount'               => $total_amount,
 					'transaction_id'             => $isSubscription ? $transaction->getPayment()->get_transaction_id() ?? null : $transaction->get_transaction_id() ?? null,
 					'transaction_order_id'       => $transaction_order_id ?? null,
 					'transaction_brand'          => $transaction->get_brand(),

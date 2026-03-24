@@ -98,7 +98,8 @@ class Pensopay_Payments_V2_Admin_Panel extends Pensopay_Payments_V2_Abstract {
 
 				// Check if action is allowed for current payment state
 				if ( $transaction->can( $action ) ) {
-					$remaining  = $transaction->amount - $transaction->captured;
+					$card_fee   = (int) ( $transaction->card_fee ?? 0 );
+					$remaining  = ( $transaction->amount + $card_fee ) - $transaction->captured;
 					$amount     = isset( $_REQUEST['pensopay_amount'] )
 						? Pensopay_Payments_V2_Helpers_Price::price_custom_to_multiplied( sanitize_text_field( wp_unslash( $_REQUEST['pensopay_amount'] ) ), $order->get_currency() )
 						: $remaining;

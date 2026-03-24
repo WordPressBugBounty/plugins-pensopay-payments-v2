@@ -28,7 +28,7 @@
                             %s: payment amount
                             %s: payment currency
                         */
-                        printf( esc_attr__( 'Capture Full Amount (%1$s %2$s)', Pensopay_Payments_V2_Gateway::TEXT_DOMAIN ), esc_attr( Pensopay_Payments_V2_Helpers_Price::normalize_price( $payment->amount - $payment->captured ) ), esc_attr( $payment->currency ) );
+                        printf( esc_attr__( 'Capture Full Amount (%1$s %2$s)', Pensopay_Payments_V2_Gateway::TEXT_DOMAIN ), esc_attr( Pensopay_Payments_V2_Helpers_Price::normalize_price( $remaining ) ), esc_attr( $payment->currency ) );
                         ?>
                     </a>
                 </li>
@@ -38,7 +38,7 @@
                 <li class="pensopay-balance original">
                     <span class="pensopay-balance__label"><?php esc_attr_e( 'Original balance', Pensopay_Payments_V2_Gateway::TEXT_DOMAIN ); ?>:</span>
                     <span class="pensopay-balance__amount"><span
-                                class="pensopay-balance__currency"> <?php echo esc_attr( $payment->currency ); ?></span><?php echo esc_attr( number_format( Pensopay_Payments_V2_Helpers_Price::normalize_price( $payment->amount ), 2, ',', '' ) ); ?></span>
+                                class="pensopay-balance__currency"> <?php echo esc_attr( $payment->currency ); ?></span><?php echo esc_attr( number_format( Pensopay_Payments_V2_Helpers_Price::normalize_price( $total_amount ), 2, ',', '' ) ); ?></span>
                 </li>
             <?php endif; ?>
             <?php if ( $payment->can( 'capture' ) ) : ?>

@@ -32,7 +32,8 @@ abstract class Pensopay_Payments_V2_Methods_Abstract extends WC_Payment_Gateway 
 			'capture_payment_on_order_completion'
 		), 10, 2 );
 		add_action( 'woocommerce_order_status_cancelled', array( $this, 'cancel_payment_on_order_cancelled' ), 10, 2 );
-//		add_action( 'woocommerce_thankyou', array( $this, 'process_order_status_after_payment' ) );
+		add_action( 'woocommerce_subscription_status_cancelled', array( $this, 'cancel_subscription_on_gateway' ) );
+		add_action( 'woocommerce_thankyou', array( $this, 'fetch_cardfee_thankyou' ) );
 
 		add_filter( 'woocommerce_gateway_icon', array( $this, 'apply_gateway_icons' ), 2, 3 );
 	}
@@ -243,23 +244,34 @@ abstract class Pensopay_Payments_V2_Methods_Abstract extends WC_Payment_Gateway 
 	private function process_callback_event( $order, $event, $callback ) {
 		switch ( $event ) {
 			case 'payment.authorized':
-				return $this->handle_payment_authorized( $order, $callback );
+				$result = $this->handle_payment_authorized( $order, $callback );
+				break;
 
 			case 'payment.captured':
-				return $this->handle_payment_captured( $order, $callback );
+				$result = $this->handle_payment_captured( $order, $callback );
+				break;
 
 			case 'mandate.authorized':
-				return $this->handle_mandate_authorized( $order, $callback );
+				$result = $this->handle_mandate_authorized( $order, $callback );
+				break;
 
 			case 'recurring.authorized':
-				return $this->handle_recurring_authorized( $order, $callback );
+				$result = $this->handle_recurring_authorized( $order, $callback );
+				break;
 
 			case 'recurring.captured':
-				return $this->handle_recurring_captured( $order, $callback );
+				$result = $this->handle_recurring_captured( $order, $callback );
+				break;
 
 			default:
-				return $callback->id;
+				$result = $callback->id;
+				break;
 		}
+
+		// Auto-complete renewal orders if setting enabled (callback-agnostic, after all handler work)
+		Pensopay_Payments_V2_Helpers_Subscription::on_payment_authorized( $order );
+
+		return $result;
 	}
 
 	/**
@@ -283,6 +295,11 @@ abstract class Pensopay_Payments_V2_Methods_Abstract extends WC_Payment_Gateway 
 
 		// Process authorization
 		do_action( 'pensopay_payments_accepted_callback_before_processing', $order, $callback );
+
+		// Add card fee if present in callback
+		if ( ! empty( $callback->card_fee ) ) {
+			Pensopay_Payments_V2_Helpers_Order::add_order_item_card_fee( $order, (int) $callback->card_fee );
+		}
 
 		$order->payment_complete( $callback->id );
 		Pensopay_Payments_V2_Helpers_Order::save_all_order_meta( $order, $callback );
@@ -363,6 +380,8 @@ abstract class Pensopay_Payments_V2_Methods_Abstract extends WC_Payment_Gateway 
 	 * Handle recurring.captured callback
 	 */
 	private function handle_recurring_captured( $order, $callback ) {
+		$this->ensure_order_authorized( $order, $callback );
+
 		$subscriptions = Pensopay_Payments_V2_Helpers_Subscription::get_subscriptions_for_renewal_order( $order );
 
 		foreach ( $subscriptions as $subscription ) {
@@ -379,6 +398,21 @@ abstract class Pensopay_Payments_V2_Methods_Abstract extends WC_Payment_Gateway 
 				) );
 				break;
 			}
+		}
+
+		// Add capture note to the renewal order
+		$order->add_order_note( sprintf(
+			/* translators: %1$s: currency, %2$s: amount, %3$s: transaction id */
+			__( 'Payment captured. Amount: %1$s %2$s. Transaction ID: %3$s', Pensopay_Payments_V2_Gateway::TEXT_DOMAIN ),
+			$callback->currency,
+			$callback->captured,
+			$callback->id
+		) );
+
+		// Complete renewal order if setting enabled (mirrors handle_payment_captured behavior)
+		$complete_on_capture = Pensopay_Payments_V2_Helper_Utility::get_setting( 'complete_on_capture' );
+		if ( Pensopay_Payments_V2_Helper_Utility::is_option_enabled( $complete_on_capture ) && ! $order->has_status( 'completed' ) ) {
+			$order->update_status( 'completed', __( 'Payment completed.', Pensopay_Payments_V2_Gateway::TEXT_DOMAIN ) );
 		}
 
 		return $callback->subscription_id;
@@ -743,13 +777,15 @@ abstract class Pensopay_Payments_V2_Methods_Abstract extends WC_Payment_Gateway 
 					} else {
 						// Check if action is allowed for current payment state
 						if ( $transaction->can( 'capture' ) ) {
-							$remaining = $transaction->amount - $transaction->captured;
+							$card_fee  = (int) ( $transaction->card_fee ?? 0 );
+							$remaining = ( $transaction->amount + $card_fee ) - $transaction->captured;
 							$response  = $transaction->capture( $remaining );
 							Pensopay_Payments_V2_Helpers_Order::save_all_order_meta( $order, $response );
 							/* translators: %s: captured amount */
 							$order->add_order_note( sprintf( __( 'Payment captured automatically. Captured amount: %s', Pensopay_Payments_V2_Gateway::TEXT_DOMAIN ), wc_price( $remaining / 100, [ 'currency' => $order->get_currency() ] ) ) );
 						} else {
-							if ( $transaction->state === 'authorized' || ( $transaction->amount - $transaction->captured ) > 0 ) {
+							$card_fee = (int) ( $transaction->card_fee ?? 0 );
+							if ( $transaction->state === 'authorized' || ( ( $transaction->amount + $card_fee ) - $transaction->captured ) > 0 ) {
 								throw new \Exception( sprintf( 'Action: "capture", is not allowed for order #%d, with state "%s"', $order->get_order_number(), $transaction->state ) );
 							}
 						}
@@ -778,6 +814,66 @@ abstract class Pensopay_Payments_V2_Methods_Abstract extends WC_Payment_Gateway 
 				$order->add_order_note( sprintf( '%s: %s', __( 'Cancel failed' ), $e->getMessage() ) );
 				error_log( $e->getMessage() );
 			}
+		}
+	}
+
+	/**
+	 * Cancel subscription on the gateway when sub changes to cancelled
+	 *
+	 * @param WC_Subscription $subscription
+	 */
+	public function cancel_subscription_on_gateway( $subscription ) {
+		if ( $subscription->get_payment_method() !== $this->id ) {
+			return;
+		}
+
+		$subscription_id = $subscription->get_meta( '_pensopay_payment_subscription_id' );
+
+		if ( empty( $subscription_id ) ) {
+			return;
+		}
+
+		try {
+			$api_subscription = new Pensopay_Api_Subscription( $subscription_id, true );
+
+			if ( $api_subscription->can( 'cancel' ) ) {
+				$api_subscription->cancel();
+				$subscription->add_order_note( __( 'pensopay: Subscription cancelled on gateway.', Pensopay_Payments_V2_Gateway::TEXT_DOMAIN ) );
+			}
+		} catch ( \Exception $e ) {
+			$subscription->add_order_note( sprintf( '%s: %s', __( 'Cancel failed' ), $e->getMessage() ) );
+			error_log( $e->getMessage() );
+		}
+	}
+
+	/**
+	 * Fetch card fee on order success page as it is yet unknown.
+	 * @param int $order_id
+	 */
+	public function fetch_cardfee_thankyou( $order_id ) {
+		$order = wc_get_order( $order_id );
+		if ( ! $order || ! Pensopay_Payments_V2_Helpers_Order::is_order_using_pensopay( $order ) ) {
+			return;
+		}
+
+		if ( ! empty( $order->get_fees() ) ) {
+			return;
+		}
+
+		try {
+			$transaction = Pensopay_Api_Transaction::from_order( $order, true );
+
+			if ( $transaction instanceof Pensopay_Api_Subscription ) {
+				$card_fee = $transaction->get_latest_payment_card_fee();
+			} else {
+				$card_fee = (int) ( $transaction->card_fee ?? 0 );
+			}
+
+			if ( $card_fee > 0 ) {
+				Pensopay_Payments_V2_Helpers_Order::add_order_item_card_fee( $order, $card_fee );
+			}
+		} catch ( \Exception $e ) {
+			// API not reachable or payment not yet created — callback will handle it later
 		}
 	}
 

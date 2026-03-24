@@ -45,22 +45,25 @@ class Pensopay_Payments_V2_Helpers_Subscription {
 		}
 	}
 
-	public function on_payment_authorized( $order ): void {
-		$autocomplete_renewal_orders = WC_PensoPay_Helper::option_is_enabled( WC_PP()->s( 'subscription_autocomplete_renewal_orders' ) );
+	public static function on_payment_authorized( $order ): void {
+		$autocomplete_renewal_orders = Pensopay_Payments_V2_Helper_Utility::is_option_enabled(
+			Pensopay_Payments_V2_Helper_Utility::get_setting( 'subscription_autocomplete_renewal_orders' )
+		);
 
-		if ( $autocomplete_renewal_orders && self::is_renewal( $order ) ) {
+		$options = Pensopay_Payments_V2_Helper_Utility::get_settings();
+		if ( ( $autocomplete_renewal_orders && self::is_renewal( $order ) ) || (! self::is_renewal( $order ) && Pensopay_Payments_V2_Helper_Utility::is_option_enabled( $options['capture_on_complete'] ) ) ) {
 			$order->update_status( 'completed', __( 'Automatically completing order status due to successful recurring payment', Pensopay_Payments_V2_Gateway::TEXT_DOMAIN ), false );
 		}
 	}
 
 	public static function get_subscription_id( WC_Order $order, $deep = true ) {
-		$subscriptionId = $order->get_meta( '_pensopay_subscription_id' );
+		$subscriptionId = $order->get_meta( '_pensopay_payment_subscription_id' );
 		if (!$subscriptionId && $deep) {
 
 			$subscriptions = wcs_get_subscriptions_for_renewal_order( $order );
 			if ( ! empty( $subscriptions ) ) {
 				$subscription = end( $subscriptions );
-				$subscriptionId = $subscription->get_meta( '_pensopay_subscription_id' );
+				$subscriptionId = $subscription->get_meta( '_pensopay_payment_subscription_id' );
 			}
 		}
 		return $subscriptionId;

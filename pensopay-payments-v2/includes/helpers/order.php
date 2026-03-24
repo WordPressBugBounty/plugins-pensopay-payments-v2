@@ -10,6 +10,36 @@ class Pensopay_Payments_V2_Helpers_Order {
 		return strpos( $order->get_payment_method(), 'pensopay_gateway' ) !== false;
 	}
 
+	/**
+	 * Add a card fee from the gateway callback to the order
+	 *
+	 * @param WC_Order $order
+	 * @param int $fee_in_cents
+	 *
+	 * @return bool
+	 */
+	public static function add_order_item_card_fee( WC_Order $order, int $fee_in_cents ): bool {
+		if ( $fee_in_cents <= 0 ) {
+			return false;
+		}
+
+		$fee = new WC_Order_Item_Fee();
+		/* translators: Fee line item name shown on the order */
+		$fee->set_name( __( 'Payment fee', Pensopay_Payments_V2_Gateway::TEXT_DOMAIN ) );
+		$fee->set_total( Pensopay_Payments_V2_Helpers_Price::normalize_price( $fee_in_cents ) );
+		$fee->set_tax_status( 'none' );
+		$fee->set_total_tax( 0 );
+		$fee->set_order_id( $order->get_id() );
+		$fee->save();
+
+		$order->add_item( apply_filters( 'pensopay_payments_card_fee_data', $fee, $order ) );
+		$order->calculate_taxes();
+		$order->calculate_totals( false );
+		$order->save();
+
+		return true;
+	}
+
 	public static function save_all_order_meta( $order, $response ) {
 		$fields = [
 			'id',

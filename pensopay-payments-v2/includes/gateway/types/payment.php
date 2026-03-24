@@ -6,7 +6,9 @@ class Pensopay_Api_Payment extends Pensopay_Api_Transaction {
 	}
 
 	public function capture( $amount ) {
-		return self::post( sprintf( 'payments/%s/capture', $this->transaction_id ), [ 'amount' => $amount ] );
+		$result = self::post( sprintf( 'payments/%s/capture', $this->transaction_id ), [ 'amount' => $amount ] );
+		$this->fetch();
+		return $result;
 	}
 
 	public function refund( $amount ) {
@@ -21,7 +23,9 @@ class Pensopay_Api_Payment extends Pensopay_Api_Transaction {
 	 * @throws Exception
 	 */
 	public function cancel() {
-		return self::post( sprintf( 'payments/%s/cancel', $this->transaction_id ) );
+		$result = self::post( sprintf( 'payments/%s/cancel', $this->transaction_id ) );
+		$this->fetch();
+		return $result;
 	}
 
 	/**
@@ -57,7 +61,8 @@ class Pensopay_Api_Payment extends Pensopay_Api_Transaction {
 		}
 
 		$state     = $data->state;
-		$remaining = $data->amount - ( $data->captured ?? 0 );
+		$card_fee  = (int) ( $data->card_fee ?? 0 );
+		$remaining = ( $data->amount + $card_fee ) - ( $data->captured ?? 0 );
 
 		$allowed_actions = [
 			'capture'          => [ 'authorized' ],
