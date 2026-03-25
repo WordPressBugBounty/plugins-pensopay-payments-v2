@@ -268,8 +268,10 @@ abstract class Pensopay_Payments_V2_Methods_Abstract extends WC_Payment_Gateway 
 				break;
 		}
 
-		// Auto-complete renewal orders if setting enabled (callback-agnostic, after all handler work)
-		Pensopay_Payments_V2_Helpers_Subscription::on_payment_authorized( $order );
+		if ( Pensopay_Payments_V2_Helpers_Subscription::plugin_is_active() ) {
+			// Auto-complete renewal orders if setting enabled (callback-agnostic, after all handler work)
+			Pensopay_Payments_V2_Helpers_Subscription::on_payment_authorized( $order );
+		}
 
 		return $result;
 	}

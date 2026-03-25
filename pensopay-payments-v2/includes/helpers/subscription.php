@@ -51,7 +51,7 @@ class Pensopay_Payments_V2_Helpers_Subscription {
 		);
 
 		$options = Pensopay_Payments_V2_Helper_Utility::get_settings();
-		if ( ( $autocomplete_renewal_orders && self::is_renewal( $order ) ) || (! self::is_renewal( $order ) && Pensopay_Payments_V2_Helper_Utility::is_option_enabled( $options['capture_on_complete'] ) ) ) {
+		if ( $autocomplete_renewal_orders && self::is_renewal( $order ) ) {
 			$order->update_status( 'completed', __( 'Automatically completing order status due to successful recurring payment', Pensopay_Payments_V2_Gateway::TEXT_DOMAIN ), false );
 		}
 	}
