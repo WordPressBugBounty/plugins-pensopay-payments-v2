@@ -29,7 +29,7 @@ class Pensopay_Payments_V2_Helpers_Media {
 			'nordea'                => 'Nordea',
 			'mobilepay'             => 'MobilePay',
 			'forbrugsforeningen'    => 'Forbrugsforeningen',
-			'ideal'                 => 'iDEAL',
+			'ideal'                 => 'iDEAL | Wero',
 			'unionpay'              => 'UnionPay',
 			'sofort'                => 'Sofort',
 			'cirrus'                => 'Cirrus',

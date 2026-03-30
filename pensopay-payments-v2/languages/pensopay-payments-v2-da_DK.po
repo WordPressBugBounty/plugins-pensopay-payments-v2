@@ -695,23 +695,23 @@ msgid "Betal med MobilePay"
 msgstr "Betal med MobilePay"
 
 #: includes/methods/stripe-ideal.php:14 includes/methods/stripe-ideal.php:52
-msgid "iDEAL"
+msgid "iDEAL | Wero"
 msgstr ""
 
 #: includes/methods/stripe-ideal.php:22
 #, fuzzy
-msgid "Accept iDEAL payments through pensopay"
+msgid "Accept iDEAL | Wero payments through pensopay"
 msgstr "Accepter Swish-betalinger gennem pensopay"
 
 #: includes/methods/stripe-ideal.php:44
 #, fuzzy
-msgid "Enable iDEAL"
+msgid "Enable iDEAL | Wero"
 msgstr "Aktiver Swish"
 
 #: includes/methods/stripe-ideal.php:59
 #, fuzzy
 #| msgid "Pay with Swish"
-msgid "Pay with iDEAL"
+msgid "Pay with iDEAL | Wero"
 msgstr "Betal med Swish"
 
 #: includes/methods/stripe-klarna.php:14 includes/methods/stripe-klarna.php:52

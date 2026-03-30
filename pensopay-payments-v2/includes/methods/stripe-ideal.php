@@ -11,7 +11,7 @@ class Pensopay_Payments_V2_Methods_StripeIdeal extends Pensopay_Payments_V2_Meth
 			'refunds'
 		);
 
-		$this->method_title = __( 'iDEAL', Pensopay_Payments_V2_Gateway::TEXT_DOMAIN );
+		$this->method_title = __( 'iDEAL | Wero', Pensopay_Payments_V2_Gateway::TEXT_DOMAIN );
 
 		$this->init_form_fields();
 		$this->init_settings();
@@ -19,7 +19,7 @@ class Pensopay_Payments_V2_Methods_StripeIdeal extends Pensopay_Payments_V2_Meth
 
 		$this->title              = $this->get_option( 'title' );
 		$this->description        = $this->get_option( 'description' );
-		$this->method_description = __( 'Accept iDEAL payments through pensopay', Pensopay_Payments_V2_Gateway::TEXT_DOMAIN );
+		$this->method_description = __( 'Accept iDEAL | Wero payments through pensopay', Pensopay_Payments_V2_Gateway::TEXT_DOMAIN );
 
 		add_filter( 'pensopay_payments_facilitator_' . $this->id, array( $this, 'set_facilitator' ) );
 		add_filter( 'pensopay_payments_' . $this->id . '_methods', array( $this, 'set_method' ) );
@@ -41,7 +41,7 @@ class Pensopay_Payments_V2_Methods_StripeIdeal extends Pensopay_Payments_V2_Meth
 			array(
 				'enabled'     => array(
 					'title'   => __( 'Enable/Disable', Pensopay_Payments_V2_Gateway::TEXT_DOMAIN ),
-					'label'   => __( 'Enable iDEAL', Pensopay_Payments_V2_Gateway::TEXT_DOMAIN ),
+					'label'   => __( 'Enable iDEAL | Wero', Pensopay_Payments_V2_Gateway::TEXT_DOMAIN ),
 					'type'    => 'checkbox',
 					'default' => 'no',
 				),
@@ -49,14 +49,14 @@ class Pensopay_Payments_V2_Methods_StripeIdeal extends Pensopay_Payments_V2_Meth
 					'title'       => __( 'Title', Pensopay_Payments_V2_Gateway::TEXT_DOMAIN ),
 					'type'        => 'text',
 					'description' => __( 'This controls the title which the user sees during checkout.', Pensopay_Payments_V2_Gateway::TEXT_DOMAIN ),
-					'default'     => __( 'iDEAL', Pensopay_Payments_V2_Gateway::TEXT_DOMAIN ),
+					'default'     => __( 'iDEAL | Wero', Pensopay_Payments_V2_Gateway::TEXT_DOMAIN ),
 					'desc_tip'    => true,
 				),
 				'description' => array(
 					'title'       => __( 'Description', Pensopay_Payments_V2_Gateway::TEXT_DOMAIN ),
 					'type'        => 'text',
 					'description' => __( 'This controls the description which the user sees during checkout.', Pensopay_Payments_V2_Gateway::TEXT_DOMAIN ),
-					'default'     => __( 'Pay with iDEAL', Pensopay_Payments_V2_Gateway::TEXT_DOMAIN ),
+					'default'     => __( 'Pay with iDEAL | Wero', Pensopay_Payments_V2_Gateway::TEXT_DOMAIN ),
 					'desc_tip'    => true,
 				)
 			)
