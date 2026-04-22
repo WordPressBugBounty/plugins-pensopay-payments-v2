@@ -3,7 +3,7 @@ Contributors: pensopay
 Tags: gateway, woocommerce, pensopay, payment, psp
 Requires at least: 6.3
 Tested up to: 6.8.2
-Stable tag: 2.0.9
+Stable tag: 2.1.0
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -38,6 +38,9 @@ General:
 2. WooCommerce >= 8.2
 
 == Changelog ==
+= 2.1.0 =
+* Support for subscription locale in the payment window
+
 = 2.0.9 =
 * Rebrand iDEAL to iDEAL | Wero
 

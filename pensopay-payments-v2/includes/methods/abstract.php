@@ -458,7 +458,7 @@ abstract class Pensopay_Payments_V2_Methods_Abstract extends WC_Payment_Gateway 
 			'callback_url' => Pensopay_Payments_V2_Gateway::get_callback_url(),
 			'success_url'  => $this->get_continue_url( $order ),
 			'cancel_url'   => $this->get_cancellation_url( $order ),
-//			'locale'       => $this->get_language(),
+			'locale'       => $this->get_language(),
 			'variables'    => self::get_variables( $order ),
 		);
 
