@@ -9,6 +9,8 @@ class Pensopay_Api {
 	 */
 	const ENDPOINT = 'https://api.pensopay.com/v2/';
 
+	const ACCOUNT_METHODS_OPTION = 'pensopay_account_methods';
+
 	protected static bool $is_api_available = true;
 
 	protected static string $api_key = '';
@@ -117,5 +119,32 @@ class Pensopay_Api {
 		}
 
 		return $response;
+	}
+
+	public static function fetch_account_methods() {
+		try {
+			$response = self::get( 'methods' );
+			if ( ! empty( $response ) && isset( $response->methods ) ) {
+				$methods = (array) $response->methods;
+				update_option( self::ACCOUNT_METHODS_OPTION, $methods, false );
+				return $methods;
+			}
+		} catch ( \Exception $e ) {
+			// fail-open: don't hide gateways on API failure
+		}
+		return null;
+	}
+
+	public static function get_account_methods() {
+		$cached = get_option( self::ACCOUNT_METHODS_OPTION, null );
+		return is_array( $cached ) ? $cached : null;
+	}
+
+	public static function clear_account_methods_cache() {
+		delete_option( self::ACCOUNT_METHODS_OPTION );
+	}
+
+	public static function reset_api_key_cache() {
+		self::$api_key = '';
 	}
 }

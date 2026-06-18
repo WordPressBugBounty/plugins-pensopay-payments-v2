@@ -44,7 +44,7 @@ if ( class_exists( 'Automattic\WooCommerce\Blocks\Payments\Integrations\Abstract
 		}
 
 		public function is_active() {
-			return $this->gateway->is_available();
+			return filter_var( $this->gateway->enabled, FILTER_VALIDATE_BOOLEAN );
 		}
 
 		public function get_payment_method_data() {

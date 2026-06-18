@@ -18,6 +18,10 @@ abstract class Pensopay_Payments_V2_Methods_Abstract extends WC_Payment_Gateway 
 		return self::$instances[ $class ];
 	}
 
+	protected static function is_checkout_context(): bool {
+		return is_checkout() || ( defined( 'REST_REQUEST' ) && REST_REQUEST );
+	}
+
 	/**
 	 * Init hooks
 	 */
@@ -36,6 +40,37 @@ abstract class Pensopay_Payments_V2_Methods_Abstract extends WC_Payment_Gateway 
 		add_action( 'woocommerce_thankyou', array( $this, 'fetch_cardfee_thankyou' ) );
 
 		add_filter( 'woocommerce_gateway_icon', array( $this, 'apply_gateway_icons' ), 2, 3 );
+		add_filter( 'woocommerce_available_payment_gateways', array( $this, 'maybe_disable_by_account_methods' ) );
+	}
+
+	protected function get_gateway_method_identifier() {
+		if ( method_exists( $this, 'set_method' ) ) {
+			$methods = $this->set_method();
+			return is_array( $methods ) && ! empty( $methods ) ? $methods[0] : null;
+		}
+		return null;
+	}
+
+	public function maybe_disable_by_account_methods( $gateways ) {
+		if ( ! isset( $gateways[ $this->id ] ) ) {
+			return $gateways;
+		}
+
+		$method_id = $this->get_gateway_method_identifier();
+		if ( $method_id === null ) {
+			return $gateways;
+		}
+
+		$account_methods = Pensopay_Api::get_account_methods();
+		if ( $account_methods === null ) {
+			return $gateways;
+		}
+
+		if ( ! in_array( $method_id, $account_methods, true ) ) {
+			unset( $gateways[ $this->id ] );
+		}
+
+		return $gateways;
 	}
 
 
@@ -60,9 +95,9 @@ abstract class Pensopay_Payments_V2_Methods_Abstract extends WC_Payment_Gateway 
 		if ( ! $redirect || $needsChangedLink ) {
 			$response = new stdClass();
 
-			if ( $needsChangedLink ) {
+//			if ( $needsChangedLink ) {
 				$this->_orderSuffix = '-' . rand( 10000, 99999 );
-			}
+//			}
 
 
 			$transaction = Pensopay_Api_Transaction::from_order( $order );
@@ -442,6 +477,11 @@ abstract class Pensopay_Payments_V2_Methods_Abstract extends WC_Payment_Gateway 
 			$params['methods'] = $methods;
 		}
 
+		$text_on_statement = Pensopay_Payments_V2_Helper_Utility::get_setting( 'text_on_statement' );
+		if ( ! empty( $text_on_statement ) ) {
+			$params['text_on_statement'] = substr( $text_on_statement, 0, 22 );
+		}
+
 		return apply_filters(
 			'pensopay_payments_payment_params',
 			$params
@@ -737,16 +777,32 @@ abstract class Pensopay_Payments_V2_Methods_Abstract extends WC_Payment_Gateway 
 		$options = Pensopay_Payments_V2_Helper_Utility::get_settings();
 
 		if ( ! empty( $options['private_key'] ) ) {
-			$private_key = $options['private_key'];
-
-			//Generate signature
-			$expected = hash_hmac( 'sha256', $body, $private_key );
-			$given    = $signature;
-
-			return hash_equals( $expected, $given );
+			return self::verify_callback_signature( (string) $body, (string) $signature, (string) $options['private_key'] );
 		}
 
 		return false;
+	}
+
+	/**
+	 * Timing-safe HMAC-SHA256 verification of a callback body against its
+	 * signature header. Pure (no WP/settings access) so it can be unit-tested
+	 * directly — see tests/phpunit/HmacCallbackTest.php. Keep this the single
+	 * source of truth for the callback crypto contract.
+	 *
+	 * @param string $body        Raw request body.
+	 * @param string $signature   Value of the PENSOPAY-SIGNATURE header.
+	 * @param string $private_key Gateway private key.
+	 *
+	 * @return bool
+	 */
+	public static function verify_callback_signature( string $body, string $signature, string $private_key ): bool {
+		if ( '' === $private_key || '' === $signature ) {
+			return false;
+		}
+
+		$expected = hash_hmac( 'sha256', $body, $private_key );
+
+		return hash_equals( $expected, $signature );
 	}
 
 	/**
@@ -1074,7 +1130,7 @@ abstract class Pensopay_Payments_V2_Methods_Abstract extends WC_Payment_Gateway 
 		$maxheight = isset( $options['pensopay_icons_maxheight'] ) ? $options['pensopay_icons_maxheight'] : '20px';
 
 		if ( file_exists( plugin_dir_path( PENSOPAY_PAYMENTS_V2_PLUGIN_FILE ) . '/assets/images/cards/' . $icon . '.svg' ) ) {
-			$icon_url = $icon_url = WC_HTTPS::force_https_url( plugin_dir_url( PENSOPAY_PAYMENTS_V2_PLUGIN_FILE ) . 'assets/images/cards/' . $icon . '.svg' );
+			$icon_url = WC_HTTPS::force_https_url( plugin_dir_url( PENSOPAY_PAYMENTS_V2_PLUGIN_FILE ) . 'assets/images/cards/' . $icon . '.svg' );
 		} else {
 			$icon_url = WC_HTTPS::force_https_url( plugin_dir_url( PENSOPAY_PAYMENTS_V2_PLUGIN_FILE ) . 'assets/images/cards/' . $icon . '.png' );
 		}

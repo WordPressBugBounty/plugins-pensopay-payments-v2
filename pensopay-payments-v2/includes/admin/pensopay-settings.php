@@ -107,6 +107,16 @@ class Pensopay_Payments_V2_Settings {
 				'type'  => 'title',
 				'title' => __( 'Advanced Settings', Pensopay_Payments_V2_Gateway::TEXT_DOMAIN )
 			],
+			'text_on_statement'   => array(
+				'title'       => __( 'Text on statement', Pensopay_Payments_V2_Gateway::TEXT_DOMAIN ),
+				'type'        => 'text',
+				'description' => __( 'Text that will appear on the customer\'s bank statement. Max 22 characters, printable ASCII only.', Pensopay_Payments_V2_Gateway::TEXT_DOMAIN ),
+				'default'     => '',
+				'desc_tip'    => true,
+				'custom_attributes' => array(
+					'maxlength' => 22,
+				),
+			),
 			'methods'             => array(
 				'title'   => __( 'Payment methods', Pensopay_Payments_V2_Gateway::TEXT_DOMAIN ),
 				'type'    => 'select',

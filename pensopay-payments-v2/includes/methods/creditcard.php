@@ -74,6 +74,8 @@ class Pensopay_Payments_V2_Methods_Creditcard extends Pensopay_Payments_V2_Metho
 			$this,
 			'scheduled_subscription_payment'
 		], 10, 2 );
+
+		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'refresh_account_methods' ), 20 );
 	}
 
 	public function scheduled_subscription_payment( $amount_to_charge, WC_Order $order ) {
@@ -87,6 +89,14 @@ class Pensopay_Payments_V2_Methods_Creditcard extends Pensopay_Payments_V2_Metho
 			);
 			/* translators: %s: authorized amount */
 			$order->add_order_note( sprintf( __( 'Subscription payment authorized. Amount: %s', Pensopay_Payments_V2_Gateway::TEXT_DOMAIN ), wc_price( $amount_to_charge, [ 'currency' => $order->get_currency() ] ) ) );
+		}
+	}
+
+	public function refresh_account_methods() {
+		Pensopay_Api::clear_account_methods_cache();
+		Pensopay_Api::reset_api_key_cache();
+		if ( Pensopay_Api::get_api_key() ) {
+			Pensopay_Api::fetch_account_methods();
 		}
 	}
 

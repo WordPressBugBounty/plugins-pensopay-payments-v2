@@ -93,6 +93,19 @@ class Pensopay_Payments_V2_Gateway extends Pensopay_Payments_V2_Abstract {
 		$methods[] = 'Pensopay_Payments_V2_Methods_ApplePay';
 		$methods[] = 'Pensopay_Payments_V2_Methods_GooglePay';
 		$methods[] = 'Pensopay_Payments_V2_Methods_VippsPsp';
+		// $methods[] = 'Pensopay_Payments_V2_Methods_VippsEpayment';
+		$methods[] = 'Pensopay_Payments_V2_Methods_Paypal';
+		$methods[] = 'Pensopay_Payments_V2_Methods_Multibanco';
+		$methods[] = 'Pensopay_Payments_V2_Methods_StripePayco';
+		$methods[] = 'Pensopay_Payments_V2_Methods_StripeKakaopay';
+		$methods[] = 'Pensopay_Payments_V2_Methods_StripeNaverpay';
+		$methods[] = 'Pensopay_Payments_V2_Methods_StripeBillie';
+		$methods[] = 'Pensopay_Payments_V2_Methods_StripeTwint';
+		$methods[] = 'Pensopay_Payments_V2_Methods_StripeBancontact';
+		$methods[] = 'Pensopay_Payments_V2_Methods_StripePrzelewy24';
+		$methods[] = 'Pensopay_Payments_V2_Methods_StripeBlik';
+		$methods[] = 'Pensopay_Payments_V2_Methods_StripeSepa';
+		$methods[] = 'Pensopay_Payments_V2_Methods_StripeMbway';
 
 		return $methods;
 	}
@@ -174,6 +187,19 @@ class Pensopay_Payments_V2_Gateway extends Pensopay_Payments_V2_Abstract {
 		require_once PPV2_PATH . '/includes/methods/applepay.php';
 		require_once PPV2_PATH . '/includes/methods/googlepay.php';
 		require_once PPV2_PATH . '/includes/methods/vippspsp.php';
+		// require_once PPV2_PATH . '/includes/methods/vippsepayment.php';
+		require_once PPV2_PATH . '/includes/methods/paypal.php';
+		require_once PPV2_PATH . '/includes/methods/multibanco.php';
+		require_once PPV2_PATH . '/includes/methods/stripe-payco.php';
+		require_once PPV2_PATH . '/includes/methods/stripe-kakaopay.php';
+		require_once PPV2_PATH . '/includes/methods/stripe-naverpay.php';
+		require_once PPV2_PATH . '/includes/methods/stripe-billie.php';
+		require_once PPV2_PATH . '/includes/methods/stripe-twint.php';
+		require_once PPV2_PATH . '/includes/methods/stripe-bancontact.php';
+		require_once PPV2_PATH . '/includes/methods/stripe-przelewy24.php';
+		require_once PPV2_PATH . '/includes/methods/stripe-blik.php';
+		require_once PPV2_PATH . '/includes/methods/stripe-sepa.php';
+		require_once PPV2_PATH . '/includes/methods/stripe-mbway.php';
 
 		// Meta boxes
 		require_once PPV2_PATH . '/includes/admin/meta-boxes/meta-box-order-actions.php';
@@ -220,9 +246,9 @@ class Pensopay_Payments_V2_Gateway extends Pensopay_Payments_V2_Abstract {
 	}
 
 	public function missing_wc_notice() {
-		/* translators: %1: woocommerce version */
 		echo sprintf( '<div class="error"><p><strong>%s</strong></p></div>',
 			sprintf(
+				/* translators: %1: woocommerce version */
 				esc_html__(
 					'pensopay requires WooCommerce %1$s or greater to be installed and active.',
 					Pensopay_Payments_V2_Gateway::TEXT_DOMAIN
@@ -237,7 +263,11 @@ class Pensopay_Payments_V2_Gateway extends Pensopay_Payments_V2_Abstract {
 			return $should_update;
 		}
 
-		if ( 'pensopay-payments-v2/pensopay-payments-v2.php' !== $plugin->plugin ) {
+		// The main plugin file is pensopay.php, so plugin_basename() resolves
+		// to "pensopay-payments-v2/pensopay.php". The previous hardcoded slug
+		// "pensopay-payments-v2/pensopay-payments-v2.php" never matched, which
+		// meant this safety check silently did nothing for major releases.
+		if ( plugin_basename( PENSOPAY_PAYMENTS_V2_PLUGIN_FILE ) !== $plugin->plugin ) {
 			return $should_update;
 		}
 

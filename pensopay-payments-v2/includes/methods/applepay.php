@@ -103,7 +103,7 @@ class Pensopay_Payments_V2_Methods_ApplePay extends Pensopay_Payments_V2_Methods
 	 * @param array $gateways
 	 */
 	public function maybe_disable_gateway( $gateways ) {
-		if ( isset( $gateways[ $this->id ] ) && is_checkout() ) {
+		if ( isset( $gateways[ $this->id ] ) && self::is_checkout_context() ) {
 
 			if ( Pensopay_Payments_V2_Helpers_Subscription::cart_has_subscription() ) {
 				unset( $gateways[ $this->id ] );

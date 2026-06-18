@@ -108,7 +108,7 @@ class Pensopay_Payments_V2_Methods_StripeKlarna extends Pensopay_Payments_V2_Met
 	 * @return array
 	 */
 	public function should_disable_gateway( $gateways ) {
-		if ( isset( $gateways[ $this->id ] ) && is_checkout() && ( $cart = WC()->cart ) ) {
+		if ( isset( $gateways[ $this->id ] ) && self::is_checkout_context() && ( $cart = WC()->cart ) ) {
 			foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
 				$context_currency   = strtoupper( get_woocommerce_currency() );
 				$allowed_currencies = array(

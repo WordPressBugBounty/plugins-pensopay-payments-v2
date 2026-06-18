@@ -24,15 +24,6 @@ class Pensopay_Payments_V2_Methods_Swish extends Pensopay_Payments_V2_Methods_Ab
 		add_filter( 'pensopay_payments_facilitator_' . $this->id, array( $this, 'set_facilitator' ) );
 		add_filter( 'pensopay_payments_' . $this->id . '_methods', array( $this, 'set_method' ) );
 		add_filter( 'woocommerce_available_payment_gateways', array( $this, 'should_disable_gateway' ) );
-		add_filter( 'pensopay_payments_request_body', array( $this, 'set_swish_fields' ) );
-	}
-
-	public function set_swish_fields( $request ) {
-//		if ($request['facilitator'] && $request['facilitator'] == 'swish') {
-//			$request['order']['billing_address']['phone'] = $request['order']['billing_address']['phone_number'];
-//			$request['order']['shipping_address']['phone'] = $request['order']['shipping_address']['phone_number'];
-//		}
-		return $request;
 	}
 
 	public function init_form_fields() {
@@ -80,7 +71,11 @@ class Pensopay_Payments_V2_Methods_Swish extends Pensopay_Payments_V2_Methods_Ab
 	 * @return array
 	 */
 	public function set_method() {
-		return [ 'swish' ];
+		$account_methods = Pensopay_Api::get_account_methods();
+		if ( is_array( $account_methods ) && in_array( 'stripe_swish', $account_methods, true ) ) {
+			return array( 'stripe_swish' );
+		}
+		return array( 'swish' );
 	}
 
 	/**
@@ -108,25 +103,25 @@ class Pensopay_Payments_V2_Methods_Swish extends Pensopay_Payments_V2_Methods_Ab
 	 * @return array
 	 */
 	public function should_disable_gateway( $gateways ) {
-		if ( isset( $gateways[ $this->id ] ) && is_checkout() && ( $cart = WC()->cart ) ) {
-			foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
+		if ( isset( $gateways[ $this->id ] ) && self::is_checkout_context() && ( $cart = WC()->cart ) ) {
+			$context_currency   = strtoupper( get_woocommerce_currency() );
+			$allowed_currencies = array( 'SEK' );
 
-				$product = $cart_item['data'];
-
-				$context_currency   = strtoupper( get_woocommerce_currency() );
-				$allowed_currencies = array( 'SEK' );
-
-				if ( ! in_array( $context_currency, $allowed_currencies, true ) ) {
-					unset( $gateways[ $this->id ] );
-				}
-
-				if ( Pensopay_Payments_V2_Helpers_Subscription::cart_has_subscription() ) {
-					unset( $gateways[ $this->id ] );
-
-					return $gateways;
-				}
+			if ( ! in_array( $context_currency, $allowed_currencies, true ) ) {
+				unset( $gateways[ $this->id ] );
+				return $gateways;
 			}
 
+			$billingCountry = WC()->customer->get_billing_country();
+			if ( $billingCountry !== 'SE' ) {
+				unset( $gateways[ $this->id ] );
+				return $gateways;
+			}
+
+			if ( Pensopay_Payments_V2_Helpers_Subscription::cart_has_subscription() ) {
+				unset( $gateways[ $this->id ] );
+				return $gateways;
+			}
 		}
 
 		return $gateways;

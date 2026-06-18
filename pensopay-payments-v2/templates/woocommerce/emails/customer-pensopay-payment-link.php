@@ -28,7 +28,7 @@ do_action( 'woocommerce_email_header', $email_heading, $email ); ?>
 
     <p><?php echo esc_html__( 'Thank you for your order.', Pensopay_Payments_V2_Gateway::TEXT_DOMAIN ) . "\n\n"; ?></p>
 
-<?php /* translators: %s: Site title */ ?>
+<?php /* translators: %s: Payment link to pay the order */ ?>
     <p><?php printf( esc_html__( 'Use the following link to pay and complete your order: %s', Pensopay_Payments_V2_Gateway::TEXT_DOMAIN ), esc_html( make_clickable( $payment_link ) ) ); ?></p>
 <?php
 

@@ -99,7 +99,7 @@ class Pensopay_Payments_V2_Methods_Mobilepay extends Pensopay_Payments_V2_Method
 	 * @return array
 	 */
 	public function should_disable_gateway( $gateways ) {
-		if ( isset( $gateways[ $this->id ] ) && is_checkout() && ( $cart = WC()->cart ) ) {
+		if ( isset( $gateways[ $this->id ] ) && self::is_checkout_context() && ( $cart = WC()->cart ) ) {
 			if ( Pensopay_Payments_V2_Helpers_Subscription::cart_has_subscription() || 'DKK' !== strtoupper( get_woocommerce_currency() ) ) {
 				unset( $gateways[ $this->id ] );
 

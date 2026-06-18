@@ -3,7 +3,8 @@ Contributors: pensopay
 Tags: gateway, woocommerce, pensopay, payment, psp
 Requires at least: 6.3
 Tested up to: 6.8.2
-Stable tag: 2.1.0
+Requires PHP: 7.4
+Stable tag: 2.1.2
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -38,6 +39,16 @@ General:
 2. WooCommerce >= 8.2
 
 == Changelog ==
+= 2.1.2 =
+* Feature: Added PAYCO, Kakao Pay, Naver Pay, Billie, TWINT, Multibanco, PayPal, Bancontact, Przelewy24, Swish (Stripe), MBWay, BLIK, SEPA Direct Debit payment methods
+* Feature: Swish and Stripe Swish are combined under the same method for convenience
+* Feature: When saving the main settings of the module, the module will now fetch the payment method from the gateway and prevent showing methods that are not active in the gateway.
+* Fix: bug in checkout where some payment methods would show when they should not and vice versa, but would correct on quote update.
+* Fix: danish translations across the module
+
+= 2.1.1 =
+* Feature: Add text_on_statement for payments, configurable on the settings page.
+
 = 2.1.0 =
 * Support for subscription locale in the payment window
 

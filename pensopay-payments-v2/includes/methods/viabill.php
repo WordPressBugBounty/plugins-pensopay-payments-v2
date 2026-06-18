@@ -98,7 +98,7 @@ class Pensopay_Payments_V2_Methods_Viabill extends Pensopay_Payments_V2_Methods_
 	 * @return array
 	 */
 	public function should_disable_gateway( $gateways ) {
-		if ( isset( $gateways[ $this->id ] ) && is_checkout() && ( $cart = WC()->cart ) ) {
+		if ( isset( $gateways[ $this->id ] ) && self::is_checkout_context() && ( $cart = WC()->cart ) ) {
 
 
 			foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
