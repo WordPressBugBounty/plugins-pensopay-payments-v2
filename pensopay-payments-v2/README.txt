@@ -4,7 +4,7 @@ Tags: gateway, woocommerce, pensopay, payment, psp
 Requires at least: 6.3
 Tested up to: 6.8.2
 Requires PHP: 7.4
-Stable tag: 2.1.2
+Stable tag: 2.1.3
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -39,6 +39,9 @@ General:
 2. WooCommerce >= 8.2
 
 == Changelog ==
+= 2.1.3 =
+* Fix: V1→V2 subscription renewals now resolve their gateway subscription id and capture correctly; failures are logged instead of silently left uncaptured
+
 = 2.1.2 =
 * Feature: Added PAYCO, Kakao Pay, Naver Pay, Billie, TWINT, Multibanco, PayPal, Bancontact, Przelewy24, Swish (Stripe), MBWay, BLIK, SEPA Direct Debit payment methods
 * Feature: Swish and Stripe Swish are combined under the same method for convenience

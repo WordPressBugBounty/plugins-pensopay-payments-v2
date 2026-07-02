@@ -69,6 +69,160 @@ class Pensopay_Payments_V2_Helpers_Subscription {
 		return $subscriptionId;
 	}
 
+	/**
+	 * Resolve the V2 subscription id + mandate for an order missing them, trying: order meta,
+	 * the subscription(s), the parent order, then the gateway. Meta hits are persisted back.
+	 *
+	 * @return array{subscription_id:string, mandate_id:string}
+	 */
+	public static function recover_v2_subscription_meta( $order, bool $persist = true ): array {
+		$subscription_id = (string) $order->get_meta( '_pensopay_payment_subscription_id' );
+		$mandate_id      = (string) $order->get_meta( '_pensopay_payment_mandate_id' );
+
+		if ( $subscription_id ) {
+			return [ 'subscription_id' => $subscription_id, 'mandate_id' => $mandate_id ];
+		}
+
+		// Candidate subscriptions: a renewal's, else the order's, else the order itself.
+		$subscriptions = self::get_subscriptions_for_renewal_order( $order );
+		if ( empty( $subscriptions ) ) {
+			$subscriptions = self::get_subscriptions_for_order( $order );
+		}
+		if ( empty( $subscriptions ) && self::is_subscription( $order ) ) {
+			$subscriptions = [ $order ];
+		}
+
+		$sources = [];
+		foreach ( $subscriptions as $subscription ) {
+			$sources[] = $subscription;
+			$parent    = $subscription->get_parent();
+			if ( $parent ) {
+				$sources[] = $parent;
+			}
+		}
+
+		// $from_meta guards persistence: only per-customer meta hits are saved back, never a
+		// gateway guess (which could be a different subscription after a switch).
+		$from_meta = false;
+		foreach ( $sources as $source ) {
+			if ( ! $subscription_id ) {
+				$subscription_id = (string) $source->get_meta( '_pensopay_payment_subscription_id' );
+				if ( $subscription_id ) {
+					$from_meta = true;
+				}
+			}
+			if ( ! $mandate_id ) {
+				$mandate_id = (string) $source->get_meta( '_pensopay_payment_mandate_id' );
+			}
+			if ( $subscription_id && $mandate_id ) {
+				break;
+			}
+		}
+
+		// Last resort: ask the gateway (used transiently, never persisted — see $from_meta).
+		if ( ! $subscription_id ) {
+			$recovered = self::recover_subscription_id_from_gateway( $subscriptions );
+			if ( $recovered['subscription_id'] ) {
+				$subscription_id = $recovered['subscription_id'];
+				$mandate_id      = $mandate_id ?: $recovered['mandate_id'];
+			}
+		}
+
+		if ( $subscription_id && $persist && $from_meta ) {
+			self::persist_v2_subscription_meta( $order, $subscriptions, $subscription_id, $mandate_id );
+		}
+
+		return [ 'subscription_id' => $subscription_id, 'mandate_id' => $mandate_id ];
+	}
+
+	/**
+	 * Persist recovered V2 ids onto the order and its subscription(s) so recovery only
+	 * has to happen once. Only fills empty keys; never overwrites an existing value.
+	 */
+	public static function persist_v2_subscription_meta( $order, array $subscriptions, string $subscription_id, string $mandate_id ): void {
+		$apply = static function ( $obj ) use ( $subscription_id, $mandate_id ) {
+			if ( ! $obj ) {
+				return;
+			}
+			$changed = false;
+			if ( $subscription_id && ! $obj->get_meta( '_pensopay_payment_subscription_id' ) ) {
+				$obj->update_meta_data( '_pensopay_payment_subscription_id', $subscription_id );
+				$changed = true;
+			}
+			if ( $mandate_id && ! $obj->get_meta( '_pensopay_payment_mandate_id' ) ) {
+				$obj->update_meta_data( '_pensopay_payment_mandate_id', $mandate_id );
+				$changed = true;
+			}
+			if ( $changed ) {
+				$obj->save();
+			}
+		};
+
+		$apply( $order );
+		foreach ( $subscriptions as $subscription ) {
+			$apply( $subscription );
+		}
+	}
+
+	/**
+	 * Return the gateway payment already recorded for a WC order id, or null. Best-effort.
+	 *
+	 * @return object|null
+	 */
+	public static function find_gateway_payment_for_order( $order_id ) {
+		try {
+			$response = Pensopay_Api::get( 'payments?order_id=' . rawurlencode( (string) $order_id ) );
+		} catch ( \Throwable $e ) {
+			return null;
+		}
+
+		$payments = ( is_object( $response ) && isset( $response->data ) ) ? $response->data : $response;
+		foreach ( (array) $payments as $payment ) {
+			if ( is_object( $payment ) && ! empty( $payment->id ) ) {
+				return $payment;
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * Best-effort gateway recovery of the V2 subscription id from the parent/switch order's
+	 * payment. Reads that payment through Pensopay_Api_Payment (transaction-cache aware)
+	 * rather than a bespoke lookup. Degrades gracefully (returns empty).
+	 *
+	 * @return array{subscription_id:string, mandate_id:string}
+	 */
+	private static function recover_subscription_id_from_gateway( array $subscriptions ): array {
+		$empty = [ 'subscription_id' => '', 'mandate_id' => '' ];
+
+		foreach ( $subscriptions as $subscription ) {
+			$parent = $subscription->get_parent();
+			if ( ! $parent ) {
+				continue;
+			}
+
+			$payment_id = $parent->get_transaction_id() ?: $parent->get_meta( '_pensopay_payment_id' );
+			if ( ! $payment_id ) {
+				continue;
+			}
+
+			try {
+				$data = ( new Pensopay_Api_Payment( $payment_id ) )->get_data();
+			} catch ( \Throwable $e ) {
+				continue;
+			}
+
+			if ( ! empty( $data->subscription_id ) ) {
+				return [
+					'subscription_id' => (string) $data->subscription_id,
+					'mandate_id'      => (string) ( $data->mandate_id ?? '' ),
+				];
+			}
+		}
+
+		return $empty;
+	}
+
 	public static function get_woocommerce_subscription_id( WC_Order $order ) {
 		$order_id = $order->get_id();
 		if ( self::is_subscription( $order_id ) ) {

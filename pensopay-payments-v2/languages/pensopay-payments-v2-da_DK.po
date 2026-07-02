@@ -1,7 +1,9 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: pensopay Payments v2\n"
-"POT-Creation-Date: 2026-06-18 09:32+0200\n"
+"Report-Msgid-Bugs-To: https://github.com/pensopay/pensopay-woocommerce/"
+"issues\n"
+"POT-Creation-Date: 2026-07-02T10:59:36+02:00\n"
 "PO-Revision-Date: 2026-06-18 09:32+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -19,6 +21,34 @@ msgstr ""
 "X-Poedit-SearchPath-0: .\n"
 "X-Poedit-SearchPathExcluded-0: *.min.js\n"
 "X-Poedit-SearchPathExcluded-1: tests/node_modules\n"
+
+#. Plugin Name of the plugin
+#: pensopay.php
+msgid "pensopay Payments v2"
+msgstr "pensopay Betalinger v2"
+
+#. Plugin URI of the plugin
+#: pensopay.php
+msgid "http://wordpress.org/plugins/pensopay/"
+msgstr "http://wordpress.org/plugins/pensopay/"
+
+#. Description of the plugin
+#: pensopay.php
+msgid ""
+"Integrates your pensopay v2 payment gateway into your WooCommerce "
+"installation."
+msgstr ""
+"Integrerer din pensopay v2 betalingsgateway i din WooCommerce-installation."
+
+#. Author of the plugin
+#: pensopay.php
+msgid "pensopay"
+msgstr "pensopay"
+
+#. Author URI of the plugin
+#: pensopay.php
+msgid "https://pensopay.com/"
+msgstr "https://pensopay.com/"
 
 #. translators: %s: order id
 #: includes/admin/admin-order-actions.php:81
@@ -430,7 +460,8 @@ msgstr "Se pensopay-indstillinger"
 msgid "Settings"
 msgstr "Indstillinger"
 
-#: includes/gateway.php:253
+#. translators: %1: woocommerce version
+#: includes/gateway.php:252
 #, php-format
 msgid ""
 "pensopay requires WooCommerce %1$s or greater to be installed and active."
@@ -440,24 +471,40 @@ msgstr ""
 msgid "Pensopay API is not available"
 msgstr "pensopay API er utilgængeligt"
 
-#: includes/gateway/types/subscription.php:101
-#: includes/gateway/types/subscription.php:102
-msgid "Failed to authorize subscription payment"
-msgstr "Mislykket abonnementsbetaling"
+#. translators: 1: HTTP status code, 2: raw response detail
+#: includes/gateway/api.php:132
+#, php-format
+msgid "pensopay API request failed (HTTP %1$s): %2$s"
+msgstr ""
 
-#: includes/gateway/types/subscription.php:106
+#. translators: %d: order id
+#: includes/gateway/types/subscription.php:94
+#, php-format
+msgid ""
+"Cannot authorize subscription renewal for order #%d: no pensopay "
+"subscription id could be resolved (order, subscription, parent order, or "
+"gateway)."
+msgstr ""
+
+#. translators: %d: order id
+#: includes/gateway/types/subscription.php:130
+#, php-format
+msgid "Failed to authorize subscription payment for order #%d."
+msgstr ""
+
+#: includes/gateway/types/subscription.php:146
 msgid "Subscription payment authorized successfully"
 msgstr "Abonnementsbetaling autoriseret"
 
-#: includes/gateway/types/subscription.php:118
-#: includes/gateway/types/subscription.php:119
-#: includes/gateway/types/subscription.php:143
-#: includes/gateway/types/subscription.php:144
+#: includes/gateway/types/subscription.php:158
+#: includes/gateway/types/subscription.php:159
+#: includes/gateway/types/subscription.php:183
+#: includes/gateway/types/subscription.php:184
 msgid "Failed to capture subscription payment"
 msgstr "Mislykket trækning af abonnementsbetaling"
 
-#: includes/gateway/types/subscription.php:122
-#: includes/gateway/types/subscription.php:147
+#: includes/gateway/types/subscription.php:162
+#: includes/gateway/types/subscription.php:187
 msgid "Subscription payment captured successfully"
 msgstr "Abonnementsbetaling hævet"
 
@@ -534,10 +581,6 @@ msgstr "Ordren refunderes. Refunderet beløb: %s"
 msgid "Order is in invalid state for refund."
 msgstr ""
 
-#: includes/methods/abstract.php:163
-msgid "Refund failed"
-msgstr "Refundering mislykkedes"
-
 #. translators: %s: transaction id
 #: includes/methods/abstract.php:347
 #, php-format
@@ -555,21 +598,32 @@ msgstr "Betaling hævet. Beløb: %1$s %2$s. Transaktions-id: %3$s"
 msgid "Payment completed."
 msgstr ""
 
+#. translators: %s: order number
+#: includes/methods/abstract.php:835
+#, php-format
+msgid ""
+"pensopay: order %s has no linked pensopay payment to capture (the renewal "
+"was never charged). No action taken."
+msgstr ""
+
 #. translators: %s: captured amount
-#: includes/methods/abstract.php:843
+#: includes/methods/abstract.php:851
 #, php-format
 msgid "Payment captured automatically. Captured amount: %s"
 msgstr "Betaling er trukket automatisk. Hævet beløb: %s"
 
-#: includes/methods/abstract.php:852
+#. translators: 1: order number, 2: payment state
+#: includes/methods/abstract.php:858
+#, php-format
+msgid ""
+"Action: \"capture\", is not allowed for order #%1$s, with state \"%2$s\""
+msgstr ""
+
+#: includes/methods/abstract.php:865
 msgid "Capture failed"
 msgstr "Trækning af beløb mislykkedes"
 
-#: includes/methods/abstract.php:872 includes/methods/abstract.php:902
-msgid "Cancel failed"
-msgstr "Annullering mislykkedes"
-
-#: includes/methods/abstract.php:899
+#: includes/methods/abstract.php:910
 msgid "pensopay: Subscription cancelled on gateway."
 msgstr "Abonnement annulleret i pensopay gateway"
 
@@ -983,7 +1037,6 @@ msgstr "Hej %s,"
 msgid "Thank you for your order."
 msgstr ""
 
-#. translators: %s: Site title
 #. translators: %s: Payment link to pay the order
 #: templates/woocommerce/emails/customer-pensopay-payment-link.php:32
 #: templates/woocommerce/emails/plain/customer-pensopay-payment-link.php:30
@@ -1008,10 +1061,7 @@ msgstr "Handlinger"
 msgid "You are about to CAPTURE this payment"
 msgstr "Du er ved at TRÆKKE denne betaling"
 
-#. translators:
-#. %s: payment amount
-#. %s: payment currency
-#.
+#. translators: %s: payment amount %s: payment currency
 #: views/html-order-actions.php:31
 #, php-format
 msgid "Capture Full Amount (%1$s %2$s)"
@@ -1099,28 +1149,14 @@ msgstr ""
 msgid "Cached"
 msgstr "Cached"
 
-#. Plugin Name of the plugin/theme
-msgid "pensopay Payments v2"
-msgstr "pensopay Betalinger v2"
+#~ msgid "Failed to authorize subscription payment"
+#~ msgstr "Mislykket abonnementsbetaling"
 
-#. Plugin URI of the plugin/theme
-msgid "http://wordpress.org/plugins/pensopay/"
-msgstr "http://wordpress.org/plugins/pensopay/"
+#~ msgid "Refund failed"
+#~ msgstr "Refundering mislykkedes"
 
-#. Description of the plugin/theme
-msgid ""
-"Integrates your pensopay v2 payment gateway into your WooCommerce "
-"installation."
-msgstr ""
-"Integrerer din pensopay v2 betalingsgateway i din WooCommerce-installation."
-
-#. Author of the plugin/theme
-msgid "pensopay"
-msgstr "pensopay"
-
-#. Author URI of the plugin/theme
-msgid "https://pensopay.com/"
-msgstr "https://pensopay.com/"
+#~ msgid "Cancel failed"
+#~ msgstr "Annullering mislykkedes"
 
 #, fuzzy
 #~ msgid "Swish (Stripe)"

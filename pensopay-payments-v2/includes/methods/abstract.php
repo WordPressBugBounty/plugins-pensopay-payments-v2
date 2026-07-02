@@ -812,47 +812,58 @@ abstract class Pensopay_Payments_V2_Methods_Abstract extends WC_Payment_Gateway 
 	 * @param $order
 	 */
 	public function capture_payment_on_order_completion( $post_id, $order ) {
-		if ( Pensopay_Payments_V2_Helpers_Order::is_order_using_pensopay( $order ) && $order->get_payment_method() === $this->id ) {
-			$options = Pensopay_Payments_V2_Helper_Utility::get_settings();
+		if ( ! Pensopay_Payments_V2_Helpers_Order::is_order_using_pensopay( $order ) || $order->get_payment_method() !== $this->id ) {
+			return;
+		}
 
+		$options = Pensopay_Payments_V2_Helper_Utility::get_settings();
 
-			/**
-			 * TODO: get this to have a single functionality that defaults to api_payment or api_subscription based on the order type
-			 * We are working off of authorizations as a priority
-			 * Capture the subscription only if "complete renewal orders"
-			 */
+		if ( ! apply_filters( 'pensopay_payments_capture_on_order_completion', Pensopay_Payments_V2_Helper_Utility::is_option_enabled( $options['capture_on_complete'] ) ) ) {
+			return;
+		}
 
+		try {
+			$transaction = Pensopay_Api_Transaction::from_order( $order );
 
-			if ( apply_filters( 'pensopay_payments_capture_on_order_completion', Pensopay_Payments_V2_Helper_Utility::is_option_enabled( $options['capture_on_complete'] ) ) ) {
-				try {
+			// For a subscription the capturable resource is the recurring payment.
+			$payment = $transaction->isSubscription() ? $transaction->getPayment() : $transaction;
 
-					$transaction = Pensopay_Api_Transaction::from_order( $order );
-					$transaction = $transaction->isSubscription() ? $transaction->getPayment() : $transaction;
+			// A broken renewal has no payment id — note it and stop (don't fetch an empty id).
+			if ( empty( $payment->get_transaction_id() ) ) {
+				$note = sprintf(
+					/* translators: %s: order number */
+					__( 'pensopay: order %s has no linked pensopay payment to capture (the renewal was never charged). No action taken.', Pensopay_Payments_V2_Gateway::TEXT_DOMAIN ),
+					$order->get_order_number()
+				);
+				$order->add_order_note( $note );
+				Pensopay_Payments_V2_Logger::warning( $note );
+				return;
+			}
 
-					if ( $transaction->isSubscription() ) {
-						//TODO -- subscriptions need to create their own payments
-						//and also the meta box needs to display non-payment data
-					} else {
-						// Check if action is allowed for current payment state
-						if ( $transaction->can( 'capture' ) ) {
-							$card_fee  = (int) ( $transaction->card_fee ?? 0 );
-							$remaining = ( $transaction->amount + $card_fee ) - $transaction->captured;
-							$response  = $transaction->capture( $remaining );
-							Pensopay_Payments_V2_Helpers_Order::save_all_order_meta( $order, $response );
-							/* translators: %s: captured amount */
-							$order->add_order_note( sprintf( __( 'Payment captured automatically. Captured amount: %s', Pensopay_Payments_V2_Gateway::TEXT_DOMAIN ), wc_price( $remaining / 100, [ 'currency' => $order->get_currency() ] ) ) );
-						} else {
-							$card_fee = (int) ( $transaction->card_fee ?? 0 );
-							if ( $transaction->state === 'authorized' || ( ( $transaction->amount + $card_fee ) - $transaction->captured ) > 0 ) {
-								throw new \Exception( sprintf( 'Action: "capture", is not allowed for order #%d, with state "%s"', $order->get_order_number(), $transaction->state ) );
-							}
-						}
-					}
-				} catch ( \Exception $e ) {
-					$order->add_order_note( sprintf( '%s: %s', __( 'Capture failed' ), $e->getMessage() ) );
-					error_log( $e->getMessage() );
+			if ( $payment->can( 'capture' ) ) {
+				$card_fee  = (int) ( $payment->card_fee ?? 0 );
+				$remaining = ( (int) $payment->amount + $card_fee ) - (int) $payment->captured;
+
+				if ( $remaining > 0 ) {
+					$response = $payment->capture( $remaining );
+					Pensopay_Payments_V2_Helpers_Order::save_all_order_meta( $order, $response );
+					/* translators: %s: captured amount */
+					$order->add_order_note( sprintf( __( 'Payment captured automatically. Captured amount: %s', Pensopay_Payments_V2_Gateway::TEXT_DOMAIN ), wc_price( $remaining / 100, [ 'currency' => $order->get_currency() ] ) ) );
+				}
+			} else {
+				$card_fee = (int) ( $payment->card_fee ?? 0 );
+				if ( $payment->state === 'authorized' || ( ( (int) $payment->amount + $card_fee ) - (int) $payment->captured ) > 0 ) {
+					throw new \Exception( sprintf(
+						/* translators: 1: order number, 2: payment state */
+						__( 'Action: "capture", is not allowed for order #%1$s, with state "%2$s"', Pensopay_Payments_V2_Gateway::TEXT_DOMAIN ),
+						$order->get_order_number(),
+						$payment->state
+					) );
 				}
 			}
+		} catch ( \Exception $e ) {
+			$order->add_order_note( sprintf( '%s: %s', __( 'Capture failed', Pensopay_Payments_V2_Gateway::TEXT_DOMAIN ), $e->getMessage() ) );
+			Pensopay_Payments_V2_Logger::error( sprintf( 'Capture failed for order #%d: %s', $order->get_id(), $e->getMessage() ) );
 		}
 	}
 

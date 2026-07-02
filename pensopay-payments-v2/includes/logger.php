@@ -7,13 +7,11 @@ class Pensopay_Payments_V2_Logger {
 
 	public static string $log_filename = Pensopay_Payments_V2_Gateway::TEXT_DOMAIN;
 
+	/** Debug-level log; respects the "logging" setting (off by default). */
 	public static function log( string $message ): void {
-		if ( ! class_exists( 'WC_Logger' ) ) {
+		$logger = self::get_logger();
+		if ( null === $logger ) {
 			return;
-		}
-
-		if ( is_null( self::$logger ) ) {
-			self::$logger = wc_get_logger();
 		}
 
 		$options = Pensopay_Payments_V2_Helper_Utility::get_settings();
@@ -22,8 +20,35 @@ class Pensopay_Payments_V2_Logger {
 			return;
 		}
 
-		$entry = $message;
+		$logger->debug( $message, [ 'source' => self::$log_filename ] );
+	}
 
-		self::$logger->debug( $entry, [ 'source' => self::$log_filename ] );
+	/** error/warning are always written, regardless of the debug "logging" toggle. */
+	public static function error( string $message ): void {
+		$logger = self::get_logger();
+		if ( null === $logger ) {
+			return;
+		}
+		$logger->error( $message, [ 'source' => self::$log_filename ] );
+	}
+
+	public static function warning( string $message ): void {
+		$logger = self::get_logger();
+		if ( null === $logger ) {
+			return;
+		}
+		$logger->warning( $message, [ 'source' => self::$log_filename ] );
+	}
+
+	private static function get_logger(): ?WC_Logger_Interface {
+		if ( ! function_exists( 'wc_get_logger' ) && ! class_exists( 'WC_Logger' ) ) {
+			return null;
+		}
+
+		if ( is_null( self::$logger ) ) {
+			self::$logger = wc_get_logger();
+		}
+
+		return self::$logger;
 	}
 }

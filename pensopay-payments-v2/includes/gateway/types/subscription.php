@@ -81,26 +81,66 @@ class Pensopay_Api_Subscription extends Pensopay_Api_Transaction {
 	}
 
 	public function authorize( $order_id, $amount, $autocapture = false ) {
-		$order      = wc_get_order( $order_id );
+		$order = wc_get_order( $order_id );
+
+		// Resolve the V2 subscription id via the recovery chain (a V1-origin renewal lacks it).
+		$recovered       = Pensopay_Payments_V2_Helpers_Subscription::recover_v2_subscription_meta( $order );
+		$subscription_id = $recovered['subscription_id'];
+		$mandate_id      = (int) $recovered['mandate_id'];
+
+		if ( empty( $subscription_id ) ) {
+			$message = sprintf(
+				/* translators: %d: order id */
+				__( 'Cannot authorize subscription renewal for order #%d: no pensopay subscription id could be resolved (order, subscription, parent order, or gateway).', Pensopay_Payments_V2_Gateway::TEXT_DOMAIN ),
+				$order_id
+			);
+			$order->update_status( 'failed', $message );
+			Pensopay_Payments_V2_Logger::error( $message );
+			throw new Exception( $message );
+		}
 
 		$postData = array(
 			'order_id'    => (string) $order_id,
 			'amount'      => $amount,
 			'autocapture' => $autocapture,
-			'variables'   => Pensopay_Payments_V2_Methods_Abstract::get_variables( wc_get_order( $order_id ) )
+			'variables'   => Pensopay_Payments_V2_Methods_Abstract::get_variables( $order ),
 		);
 
-		$mandate_id = (int)$order->get_meta( '_pensopay_payment_mandate_id' );
 		if ( $mandate_id ) {
 			$postData['mandate_id'] = $mandate_id;
 		}
 
-		$result = self::post( sprintf( 'subscriptions/%s/payments', $order->get_meta( '_pensopay_payment_subscription_id' ) ), $postData );
-
-		if ( ! $result ) {
-			$order->set_status( 'failed', __( 'Failed to authorize subscription payment', Pensopay_Payments_V2_Gateway::TEXT_DOMAIN ) );
-			throw new Exception( __( 'Failed to authorize subscription payment', Pensopay_Payments_V2_Gateway::TEXT_DOMAIN ) );
+		// The gateway rejects a duplicate order_id, so on POST failure we adopt any payment a
+		// prior attempt already created (idempotent) rather than fail or charge twice.
+		$result     = null;
+		$post_error = null;
+		try {
+			$result = self::post( sprintf( 'subscriptions/%s/payments', $subscription_id ), $postData );
+		} catch ( \Throwable $e ) {
+			$post_error = $e;
 		}
+
+		if ( empty( $result ) || empty( $result->id ) ) {
+			$existing = Pensopay_Payments_V2_Helpers_Subscription::find_gateway_payment_for_order( $order_id );
+			if ( $existing && ! empty( $existing->id ) ) {
+				$result = $existing; // adopt the payment the earlier attempt created
+			} else {
+				$message = sprintf(
+					/* translators: %d: order id */
+					__( 'Failed to authorize subscription payment for order #%d.', Pensopay_Payments_V2_Gateway::TEXT_DOMAIN ),
+					$order_id
+				);
+				$order->update_status( 'failed', $message );
+				Pensopay_Payments_V2_Logger::error( $message . ( $post_error ? ' | ' . $post_error->getMessage() : '' ) );
+				throw new Exception( $message, 0, $post_error );
+			}
+		}
+
+		// Warm the transaction cache with the created/adopted payment so the follow-up
+		// capture/meta-box read hits the cache instead of re-fetching (same as fetch/refund).
+		$payment = new Pensopay_Api_Payment();
+		$payment->set_data( $result );
+		$payment->cache_transaction();
 
 		Pensopay_Payments_V2_Helpers_Order::save_all_order_meta( $order, $result );
 		$order->set_status( 'processing', __( 'Subscription payment authorized successfully', Pensopay_Payments_V2_Gateway::TEXT_DOMAIN ) );

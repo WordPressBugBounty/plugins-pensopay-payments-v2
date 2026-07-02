@@ -106,16 +106,34 @@ class Pensopay_Api {
 		}
 
 		$status_code = wp_remote_retrieve_response_code( $response );
-		$response    = json_decode( $response['body'] ) ?? new stdClass();
+		$raw_body    = is_array( $response ) ? ( $response['body'] ?? '' ) : '';
+		$response    = json_decode( $raw_body ) ?? new stdClass();
 
-		if ( ! in_array( $status_code, array( 200, 201 ) ) ) {
-			Pensopay_Payments_V2_Logger::log( print_r( $response, true ) );
+		if ( ! in_array( $status_code, array( 200, 201 ), true ) ) {
+			Pensopay_Payments_V2_Logger::log( sprintf( 'pensopay API %s %s -> HTTP %s: %s', $method, $resource, $status_code, $raw_body ) );
+
 			if ( isset( $response->response, $response->response->error_code ) ) {
-				$errorString = $response->response->error_message;
-				throw new \Pensopay_Payments_V2_Exception( esc_attr( $errorString ) );
-			} else if ( isset( $response->message ) ) {
+				throw new \Pensopay_Payments_V2_Exception( esc_attr( $response->response->error_message ) );
+			}
+
+			if ( isset( $response->message ) ) {
 				throw new \Pensopay_Payments_V2_Exception( esc_attr( $response->message ) );
 			}
+
+			// Non-2xx with an empty or non-JSON body: throw rather than return empty data.
+			$detail = trim( (string) $raw_body );
+			if ( '' === $detail ) {
+				$detail = 'empty response body';
+			}
+
+			throw new \Pensopay_Payments_V2_Exception(
+				esc_attr( sprintf(
+					/* translators: 1: HTTP status code, 2: raw response detail */
+					__( 'pensopay API request failed (HTTP %1$s): %2$s', Pensopay_Payments_V2_Gateway::TEXT_DOMAIN ),
+					$status_code,
+					function_exists( 'mb_substr' ) ? mb_substr( $detail, 0, 300 ) : substr( $detail, 0, 300 )
+				) )
+			);
 		}
 
 		return $response;
