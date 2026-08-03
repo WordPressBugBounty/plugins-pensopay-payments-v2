@@ -39,6 +39,11 @@ abstract class Pensopay_Payments_V2_Methods_Abstract extends WC_Payment_Gateway 
 		add_action( 'woocommerce_subscription_status_cancelled', array( $this, 'cancel_subscription_on_gateway' ) );
 		add_action( 'woocommerce_thankyou', array( $this, 'fetch_cardfee_thankyou' ) );
 
+		add_filter( 'wcs_renewal_order_created', array(
+			'Pensopay_Payments_V2_Helpers_Subscription',
+			'strip_renewal_order_payment_meta'
+		), 10, 2 );
+
 		add_filter( 'woocommerce_gateway_icon', array( $this, 'apply_gateway_icons' ), 2, 3 );
 		add_filter( 'woocommerce_available_payment_gateways', array( $this, 'maybe_disable_by_account_methods' ) );
 	}
@@ -298,8 +303,24 @@ abstract class Pensopay_Payments_V2_Methods_Abstract extends WC_Payment_Gateway 
 				$result = $this->handle_recurring_captured( $order, $callback );
 				break;
 
+			case 'payment.capture_failed':
+			case 'recurring.capture_failed':
+			case 'mandate.capture_failed':
+				$result = $this->handle_capture_failed( $order, $event, $callback );
+				break;
+
 			default:
-				$result = $callback->id;
+				// pensopay documents exactly three event names — authorized, captured and
+				// capture_failed — across the payment|recurring|mandate types, and every
+				// one of them is handled above. Anything reaching here is new or
+				// undocumented: record it so it is discoverable, but never guess at its
+				// meaning by mutating order status.
+				Pensopay_Payments_V2_Logger::log( sprintf(
+					'Unhandled pensopay callback event for order #%d: %s',
+					$order->get_id(),
+					$event
+				) );
+				$result = $callback->id ?? false;
 				break;
 		}
 
@@ -309,6 +330,41 @@ abstract class Pensopay_Payments_V2_Methods_Abstract extends WC_Payment_Gateway 
 		}
 
 		return $result;
+	}
+
+	/**
+	 * Handle a *.capture_failed callback: the gateway authorized the payment but the
+	 * subsequent capture did not succeed. Without this, a renewal that authorize()
+	 * already optimistically marked 'processing' is never corrected — observed live
+	 * as renewals declined for insufficient funds sitting silently "Processing"
+	 * indefinitely.
+	 *
+	 * capture_failed is one of exactly three event names pensopay documents
+	 * (authorized, captured, capture_failed), each prefixed by the resource type
+	 * payment|recurring|mandate — see https://docs.pensopay.com/reference/callback.md.
+	 * Confirmed live against the test gateway with the documented fail-on-capture
+	 * test card (PAN ending 1113): the event delivered is `payment.capture_failed`
+	 * with message "40412: Rejected by test PAN".
+	 *
+	 * Note there is deliberately no handling for cancellation or expiry: those are
+	 * payment *states*, not callback events, so no callback carries them.
+	 *
+	 * @param WC_Order $order
+	 * @param string   $event
+	 * @param object   $callback
+	 * @return string|false
+	 */
+	private function handle_capture_failed( $order, $event, $callback ) {
+		if ( ! $order->has_status( array( 'failed', 'cancelled' ) ) ) {
+			$order->update_status( 'failed', sprintf(
+				/* translators: %s: gateway callback event name */
+				__( 'pensopay reported a failed/declined payment event (%s) for this order.', Pensopay_Payments_V2_Gateway::TEXT_DOMAIN ),
+				$event
+			) );
+			Pensopay_Payments_V2_Logger::error( sprintf( 'Order #%d marked failed due to gateway event: %s', $order->get_id(), $event ) );
+		}
+
+		return $callback->id ?? false;
 	}
 
 	/**
@@ -330,6 +386,43 @@ abstract class Pensopay_Payments_V2_Methods_Abstract extends WC_Payment_Gateway 
 			return false;
 		}
 
+		// A decline already failed this order — never revive it.
+		//
+		// A declined card produces TWO callbacks in the same instant: the authorization
+		// genuinely succeeded, then the capture was rejected. GET_LOCK serialises them but
+		// does not order them, so roughly half the time capture_failed is processed first
+		// and this authorization arrives afterwards. Without this guard payment_complete()
+		// below puts the order back to 'processing', and a payment the gateway rejected
+		// ends up looking paid. Observed live on order #2935 (gateway payment 40477044).
+		//
+		// The authorized payload cannot be used to detect this: its resource reports
+		// state 'authorized' and an empty message, identical to a successful
+		// authorization — the failure exists only in the capture_failed event. So the
+		// order's own status is the single source of truth, and it wins.
+		if ( $order->has_status( array( 'failed', 'cancelled' ) ) ) {
+			Pensopay_Payments_V2_Logger::log( sprintf(
+				'Ignoring %s authorization for order #%d: order is already %s.',
+				$callback->id ?? 'unknown',
+				$order->get_id(),
+				$order->get_status()
+			) );
+			return false;
+		}
+
+		// Defence in depth: never complete an order from a resource the gateway reports in
+		// a terminal-negative state. Not what bit us above (a declined capture still reads
+		// 'authorized'), but these are documented payment states —
+		// https://docs.pensopay.com/reference/payment-states.md — and none of them means paid.
+		$state = isset( $callback->state ) ? (string) $callback->state : '';
+		if ( in_array( $state, array( 'rejected', 'canceled', 'cancelled', 'expired' ), true ) ) {
+			Pensopay_Payments_V2_Logger::log( sprintf(
+				'Ignoring authorization for order #%d: gateway reports payment state "%s".',
+				$order->get_id(),
+				$state
+			) );
+			return false;
+		}
+
 		// Process authorization
 		do_action( 'pensopay_payments_accepted_callback_before_processing', $order, $callback );
 
@@ -340,6 +433,17 @@ abstract class Pensopay_Payments_V2_Methods_Abstract extends WC_Payment_Gateway 
 
 		$order->payment_complete( $callback->id );
 		Pensopay_Payments_V2_Helpers_Order::save_all_order_meta( $order, $callback );
+
+		// The hosted checkout link this callback confirms is now consumed — clear it so a
+		// LATER process_payment() call on this same order/subscription (e.g. a second
+		// "Change payment method" attempt) creates a fresh transaction instead of reusing
+		// this now-dead link. Confirmed live: a second attempt reused the first attempt's
+		// already-consumed link and the customer landed on "payment no longer pending
+		// authorization." Only cleared here, once confirmed consumed — a legitimate
+		// double-submit BEFORE this callback arrives still correctly reuses the
+		// still-valid, not-yet-consumed link rather than creating a duplicate transaction.
+		$order->delete_meta_data( '_pensopay_payment_link' );
+		$order->delete_meta_data( '_pensopay_payment_facilitator' );
 
 		// Add authorization note
 		$order->add_order_note( sprintf(
@@ -393,13 +497,26 @@ abstract class Pensopay_Payments_V2_Methods_Abstract extends WC_Payment_Gateway 
 	 * Handle mandate.authorized callback
 	 */
 	private function handle_mandate_authorized( $order, $callback ) {
-		if ( $this->ensure_order_authorized( $order, $callback ) ) {
-			$transaction = Pensopay_Api_Transaction::from_order( $order );
+		// $order is whatever the callback's real_order_id pointed to, which for a mandate
+		// fixed via "Change payment method" on the subscription itself is the subscription,
+		// not the actual overdue renewal order awaiting payment. Resolve BEFORE marking
+		// anything authorized: WC_Subscription::payment_complete() cascades and marks its
+		// latest related order paid with whatever transaction id it's given, so calling
+		// ensure_order_authorized() on the subscription would falsely complete the renewal
+		// with the mandate's (wrong, nominal-amount) id before we ever get to authorize()
+		// the real charge. Routing to the resolved target directly (a plain WC_Order, with
+		// no such cascade) avoids that, and authorize() overwrites it with the real payment
+		// moments later regardless.
+		$target = Pensopay_Payments_V2_Helpers_Subscription::resolve_order_needing_payment( $order );
+
+		if ( $this->ensure_order_authorized( $target, $callback ) ) {
+			$transaction = Pensopay_Api_Transaction::from_order( $target );
 			$transaction->authorize(
-				$order->get_id(),
-				(int) Pensopay_Payments_V2_Helpers_Price::multiply_price( $order->get_total(), $order->get_currency() )
+				$target->get_id(),
+				(int) Pensopay_Payments_V2_Helpers_Price::multiply_price( $target->get_total(), $target->get_currency() ),
+				Pensopay_Payments_V2_Helper_Utility::is_option_enabled( $this->get_autocapture_setting( $target ) )
 			);
-			$order->save();
+			$target->save();
 		}
 
 		return $callback->subscription_id;

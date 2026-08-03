@@ -28,7 +28,12 @@ class Pensopay_Payments_V2_Helpers_Subscription {
 				$fields['subscription_id'] = 'id';
 			}
 
-			$subscriptions = wcs_get_subscriptions_for_order( $order->get_id() );
+			// Default order_type is ['parent', 'switch'] — excludes 'renewal'. Without 'any'
+			// here, paying a failed renewal order directly (a new mandate's real_order_id is
+			// the renewal order's own id, not the subscription's) saves the new id onto the
+			// renewal order but never propagates it to the actual WC_Subscription, permanently
+			// breaking every future scheduled renewal until manually backfilled.
+			$subscriptions = wcs_get_subscriptions_for_order( $order->get_id(), [ 'order_type' => 'any' ] );
 
 			foreach ($fields as $fieldName => $field) {
 				if ( ! empty( $response->{$field} ) ) {
@@ -43,6 +48,64 @@ class Pensopay_Payments_V2_Helpers_Subscription {
 				$subscription->save();
 			}
 		}
+	}
+
+	/**
+	 * WCS copies ALL subscription meta onto a new renewal order by default
+	 * (WC_Subscriptions_Data_Copier), including this plugin's own per-transaction
+	 * fields. If left in place, process_payment() finds a non-empty inherited
+	 * _pensopay_payment_link and reuses that ancestor's already-consumed link
+	 * instead of creating a fresh transaction for the new renewal order — the
+	 * customer lands on a dead "payment no longer pending authorization" page
+	 * instead of a working checkout when paying a failed renewal directly.
+	 *
+	 * Mirrors WCS's own exclusion of _transaction_id from the copy, for the same
+	 * reason: a renewal order must always get its own transaction, never inherit
+	 * one from the subscription or a prior order.
+	 *
+	 * Checks $subscription's payment method, NOT $renewal_order's: WCS excludes
+	 * _payment_method from the meta copy and only sets it on the renewal order
+	 * later in process_renewal(), AFTER this filter runs — so the renewal order
+	 * itself has no payment method yet at this point.
+	 *
+	 * @param WC_Order        $renewal_order
+	 * @param WC_Subscription $subscription
+	 * @return WC_Order
+	 */
+	public static function strip_renewal_order_payment_meta( $renewal_order, $subscription ) {
+		if ( $renewal_order instanceof WC_Order && $subscription instanceof WC_Order && Pensopay_Payments_V2_Helpers_Order::is_order_using_pensopay( $subscription ) ) {
+			$renewal_order->delete_meta_data( '_pensopay_payment_id' );
+			$renewal_order->delete_meta_data( '_pensopay_payment_link' );
+			$renewal_order->delete_meta_data( '_pensopay_payment_facilitator' );
+			$renewal_order->save();
+		}
+		return $renewal_order;
+	}
+
+	/**
+	 * Resolve which order a newly-authorized mandate's recurring payment should be
+	 * charged against. Normally that's $order itself (e.g. initial signup, where
+	 * $order is the parent order). But a mandate can also be (re)authorized via
+	 * "Change payment method" run directly on the SUBSCRIPTION (e.g. a customer
+	 * fixing a card after a failed renewal) — there, $order is the subscription,
+	 * and charging $order->get_id() files the payment under the subscription's
+	 * own id instead of the actual overdue renewal order nothing else is
+	 * watching for that id ever captures.
+	 *
+	 * @param WC_Order $order
+	 * @return WC_Order
+	 */
+	public static function resolve_order_needing_payment( $order ) {
+		if ( self::is_subscription( $order ) ) {
+			$last_renewal_id = $order->get_last_order( 'ids', 'renewal' );
+			if ( $last_renewal_id ) {
+				$last_renewal = wc_get_order( $last_renewal_id );
+				if ( $last_renewal && $last_renewal->needs_payment() ) {
+					return $last_renewal;
+				}
+			}
+		}
+		return $order;
 	}
 
 	public static function on_payment_authorized( $order ): void {

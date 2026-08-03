@@ -4,7 +4,7 @@ Tags: gateway, woocommerce, pensopay, payment, psp
 Requires at least: 6.3
 Tested up to: 6.8.2
 Requires PHP: 7.4
-Stable tag: 2.1.3
+Stable tag: 2.1.4
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -39,6 +39,17 @@ General:
 2. WooCommerce >= 8.2
 
 == Changelog ==
+= 2.1.4 =
+* Fix: renewal orders no longer reuse the subscription's already-consumed payment link
+* Fix: a mandate authorized via "Change payment method" now charges the outstanding renewal order instead of the subscription
+* Fix: mandate-driven recurring charges now respect the merchant's autocapture setting
+* Fix: a failed capture reported by the gateway now marks the order failed instead of leaving it as processing
+* Fix: an order failed by a declined payment can no longer be reopened as paid by the authorization callback that arrives alongside it
+* Fix: a hosted checkout link is cleared once consumed, so a repeat payment attempt creates a fresh transaction
+* Change: the gateway's capture_failed callback events are now handled explicitly rather than matched by pattern
+* Change: removed unused internal subscription capture methods
+* Change: updated development dependencies
+
 = 2.1.3 =
 * Fix: V1→V2 subscription renewals now resolve their gateway subscription id and capture correctly; failures are logged instead of silently left uncaptured
 
