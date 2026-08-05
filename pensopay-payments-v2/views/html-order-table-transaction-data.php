@@ -15,9 +15,11 @@
             <td><?php esc_attr_e( 'Method', Pensopay_Payments_V2_Gateway::TEXT_DOMAIN ) ?>:</td>
             <td>
 				<span class="transaction-brand">
+					<?php if ( $transaction_brand_logo_url ) : ?>
                     <img src="<?= esc_attr( $transaction_brand_logo_url ) ?>"
                          alt="<?= esc_attr( $transaction_brand ) ?>" title="<?= esc_attr( $transaction_brand ) ?>"
                          style="max-width:20px"/>
+					<?php endif; ?>
                 </span>
             </td>
         </tr>

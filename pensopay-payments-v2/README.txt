@@ -4,7 +4,7 @@ Tags: gateway, woocommerce, pensopay, payment, psp
 Requires at least: 6.3
 Tested up to: 6.8.2
 Requires PHP: 7.4
-Stable tag: 2.1.4
+Stable tag: 2.1.5
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -39,6 +39,12 @@ General:
 2. WooCommerce >= 8.2
 
 == Changelog ==
+= 2.1.5 =
+* Fix: payment methods without a card brand (Anyday, ViaBill and every other alternative method) now show their own logo in the order overview instead of no logo
+* Fix: a reported card brand is only used when the matching logo file exists, so brands whose logo ships only as a PNG no longer render a broken image
+* Fix: the Finnish store language is now sent to the gateway as fi_FI, which the API accepts, instead of WordPress's bare fi
+* Change: updated development dependencies
+
 = 2.1.4 =
 * Fix: renewal orders no longer reuse the subscription's already-consumed payment link
 * Fix: a mandate authorized via "Change payment method" now charges the outstanding renewal order instead of the subscription

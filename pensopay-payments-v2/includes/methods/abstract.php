@@ -1127,8 +1127,17 @@ abstract class Pensopay_Payments_V2_Methods_Abstract extends WC_Payment_Gateway 
 
 	protected function get_wp_locale() {
 		$lang_iso = get_locale();
-		if ( $lang_iso === 'fo' ) { //Wordpress does not use the right format for Faroese which is relevant for us.
-			$lang_iso = 'fo_FO';
+
+		// WordPress returns a bare 2-letter code for some languages, but the payment API
+		// validates `locale` as exactly 5 characters (da_DK, en_US, nb_NO, ...) and rejects
+		// the entire request with a validation error otherwise. Expand the ones we support.
+		$short_locales = array(
+			'fo' => 'fo_FO', // Faroese.
+			'fi' => 'fi_FI', // Finnish.
+		);
+
+		if ( isset( $short_locales[ $lang_iso ] ) ) {
+			$lang_iso = $short_locales[ $lang_iso ];
 		}
 
 		return $lang_iso;
