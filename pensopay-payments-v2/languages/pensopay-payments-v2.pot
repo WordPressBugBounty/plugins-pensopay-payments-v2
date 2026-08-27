@@ -2,14 +2,14 @@
 # This file is distributed under the GPLv2.
 msgid ""
 msgstr ""
-"Project-Id-Version: pensopay Payments v2 2.1.4\n"
+"Project-Id-Version: pensopay Payments v2 2.1.6\n"
 "Report-Msgid-Bugs-To: https://github.com/pensopay/pensopay-woocommerce/issues\n"
 "Last-Translator: pensopay\n"
 "Language-Team: pensopay\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-08-03T08:42:48+00:00\n"
+"POT-Creation-Date: 2026-08-26T10:22:47+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: pensopay-payments-v2\n"
@@ -471,30 +471,58 @@ msgstr ""
 msgid "pensopay requires WooCommerce %1$s or greater to be installed and active."
 msgstr ""
 
-#: includes/gateway/api.php:76
+#: includes/gateway/api.php:96
 msgid "Pensopay API is not available"
 msgstr ""
 
 #. translators: 1: HTTP status code, 2: raw response detail
-#: includes/gateway/api.php:132
+#: includes/gateway/api.php:152
 #, php-format
 msgid "pensopay API request failed (HTTP %1$s): %2$s"
 msgstr ""
 
+#. translators: %s: gateway payment state
+#: includes/gateway/types/payment.php:77
+#, php-format
+msgid "gateway state: %s"
+msgstr ""
+
 #. translators: %d: order id
-#: includes/gateway/types/subscription.php:94
+#: includes/gateway/types/subscription.php:99
 #, php-format
 msgid "Cannot authorize subscription renewal for order #%d: no pensopay subscription id could be resolved (order, subscription, parent order, or gateway)."
 msgstr ""
 
 #. translators: %d: order id
-#: includes/gateway/types/subscription.php:130
+#: includes/gateway/types/subscription.php:135
 #, php-format
 msgid "Failed to authorize subscription payment for order #%d."
 msgstr ""
 
-#: includes/gateway/types/subscription.php:146
+#. translators: 1: gateway payment state, 2: gateway payment id, 3: decline reason
+#: includes/gateway/types/subscription.php:198
+#, php-format
+msgid "Subscription renewal declined by the acquirer (state: %1$s). Payment ID: %2$s. Reason: %3$s"
+msgstr ""
+
+#: includes/gateway/types/subscription.php:201
+msgid "no reason given by the acquirer"
+msgstr ""
+
+#: includes/gateway/types/subscription.php:229
 msgid "Subscription payment authorized successfully"
+msgstr ""
+
+#: includes/gateway/types/subscription.php:237
+#: includes/methods/abstract.php:507
+#: includes/methods/abstract.php:598
+msgid "Payment completed."
+msgstr ""
+
+#. translators: 1: gateway payment state, 2: gateway payment id
+#: includes/gateway/types/subscription.php:256
+#, php-format
+msgid "Renewal payment created, awaiting confirmation from pensopay (state: %1$s). Payment ID: %2$s"
 msgstr ""
 
 #: includes/gateway/types/transaction.php:47
@@ -538,7 +566,7 @@ msgid "Swedish"
 msgstr ""
 
 #. translators: Fee line item name shown on the order
-#: includes/helpers/order.php:28
+#: includes/helpers/order.php:29
 msgid "Payment fee"
 msgstr ""
 
@@ -569,53 +597,46 @@ msgid "Order is in invalid state for refund."
 msgstr ""
 
 #. translators: %s: gateway callback event name
-#: includes/methods/abstract.php:361
+#: includes/methods/abstract.php:353
 #, php-format
 msgid "pensopay reported a failed/declined payment event (%s) for this order."
 msgstr ""
 
 #. translators: %s: transaction id
-#: includes/methods/abstract.php:414
+#: includes/methods/abstract.php:442
 #, php-format
 msgid "Payment authorized. Transaction ID: %s"
 msgstr ""
 
-#. translators: %1$s: currency, %2$s: amount, %3$s: transaction id
-#: includes/methods/abstract.php:443
-#: includes/methods/abstract.php:511
-#: includes/methods/abstract.php:523
+#. translators: %1$s: captured amount, %2$s: transaction id
+#: includes/methods/abstract.php:524
 #, php-format
-msgid "Payment captured. Amount: %1$s %2$s. Transaction ID: %3$s"
-msgstr ""
-
-#: includes/methods/abstract.php:453
-#: includes/methods/abstract.php:532
-msgid "Payment completed."
+msgid "Payment captured. Amount: %1$s. Transaction ID: %2$s"
 msgstr ""
 
 #. translators: %s: order number
-#: includes/methods/abstract.php:915
+#: includes/methods/abstract.php:981
 #, php-format
 msgid "pensopay: order %s has no linked pensopay payment to capture (the renewal was never charged). No action taken."
 msgstr ""
 
 #. translators: %s: captured amount
-#: includes/methods/abstract.php:931
+#: includes/methods/abstract.php:997
 #, php-format
 msgid "Payment captured automatically. Captured amount: %s"
 msgstr ""
 
 #. translators: 1: order number, 2: payment state
-#: includes/methods/abstract.php:938
+#: includes/methods/abstract.php:1004
 #, php-format
 msgid "Action: \"capture\", is not allowed for order #%1$s, with state \"%2$s\""
 msgstr ""
 
-#: includes/methods/abstract.php:945
+#: includes/methods/abstract.php:1011
 msgid "Capture failed"
 msgstr ""
 
-#: includes/methods/abstract.php:990
+#: includes/methods/abstract.php:1056
 msgid "pensopay: Subscription cancelled on gateway."
 msgstr ""
 
@@ -664,7 +685,7 @@ msgid "pensopay credit card"
 msgstr ""
 
 #. translators: %s: authorized amount
-#: includes/methods/creditcard.php:91
+#: includes/methods/creditcard.php:94
 #, php-format
 msgid "Subscription payment authorized. Amount: %s"
 msgstr ""
@@ -1000,19 +1021,19 @@ msgstr ""
 
 #: includes/methods/vippsepayment.php:14
 #: includes/methods/vippsepayment.php:43
-msgid "VippsMobilePay ePayment"
+msgid "Vipps MobilePay"
 msgstr ""
 
 #: includes/methods/vippsepayment.php:22
-msgid "Accept VippsMobilePay ePayment payments through pensopay"
+msgid "Accept Vipps MobilePay payments through pensopay"
 msgstr ""
 
 #: includes/methods/vippsepayment.php:35
-msgid "Enable VippsMobilePay ePayment"
+msgid "Enable Vipps MobilePay"
 msgstr ""
 
 #: includes/methods/vippsepayment.php:50
-msgid "Pay with VippsMobilePay ePayment"
+msgid "Pay with Vipps MobilePay"
 msgstr ""
 
 #: includes/methods/vippspsp.php:14
@@ -1129,26 +1150,26 @@ msgstr ""
 msgid "Method"
 msgstr ""
 
-#: views/html-order-table-transaction-data.php:27
+#: views/html-order-table-transaction-data.php:29
 #: views/html-subscription-table-transaction-data.php:23
 msgid "This order has been paid with test card data!"
 msgstr ""
 
-#: views/html-order-table-transaction-data.php:29
+#: views/html-order-table-transaction-data.php:31
 #: views/html-subscription-table-transaction-data.php:25
 msgid "Test"
 msgstr ""
 
-#: views/html-order-table-transaction-data.php:40
+#: views/html-order-table-transaction-data.php:42
 msgid "Sub"
 msgstr ""
 
-#: views/html-order-table-transaction-data.php:45
+#: views/html-order-table-transaction-data.php:47
 #: views/html-subscription-table-transaction-data.php:35
 msgid "NB: The transaction data is served from cached results. Click to view the order and update the cached data."
 msgstr ""
 
-#: views/html-order-table-transaction-data.php:47
+#: views/html-order-table-transaction-data.php:49
 #: views/html-subscription-table-transaction-data.php:37
 msgid "Cached"
 msgstr ""

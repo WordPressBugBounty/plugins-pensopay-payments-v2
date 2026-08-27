@@ -240,12 +240,30 @@ class Pensopay_Payments_V2_Helpers_Subscription {
 		}
 
 		$payments = ( is_object( $response ) && isset( $response->data ) ) ? $response->data : $response;
+
+		$undetermined      = null;
+		$terminal_negative = null;
+
 		foreach ( (array) $payments as $payment ) {
-			if ( is_object( $payment ) && ! empty( $payment->id ) ) {
+			if ( ! is_object( $payment ) || empty( $payment->id ) ) {
+				continue;
+			}
+
+			$state = $payment->state ?? '';
+
+			if ( Pensopay_Api_Transaction::is_authorized_state( $state ) ) {
 				return $payment;
 			}
+
+			if ( Pensopay_Api_Transaction::is_terminal_negative_state( $state ) ) {
+				$terminal_negative = $terminal_negative ?? $payment;
+				continue;
+			}
+
+			$undetermined = $undetermined ?? $payment;
 		}
-		return null;
+
+		return $undetermined ?? $terminal_negative;
 	}
 
 	/**

@@ -82,13 +82,17 @@ class Pensopay_Payments_V2_Methods_Creditcard extends Pensopay_Payments_V2_Metho
 		if ( ( $order->get_payment_method() === $this->id ) && $order->needs_payment() ) {
 			$transaction = Pensopay_Api_Transaction::from_order( $order );
 			$autocapture = Pensopay_Payments_V2_Helper_Utility::is_option_enabled( $this->get_autocapture_setting( $order ) );
-			$transaction->authorize(
+			$state       = $transaction->authorize(
 				$order->get_id(),
 				(int) Pensopay_Payments_V2_Helpers_Price::multiply_price( $amount_to_charge, $order->get_currency() ),
 				$autocapture
 			);
-			/* translators: %s: authorized amount */
-			$order->add_order_note( sprintf( __( 'Subscription payment authorized. Amount: %s', Pensopay_Payments_V2_Gateway::TEXT_DOMAIN ), wc_price( $amount_to_charge, [ 'currency' => $order->get_currency() ] ) ) );
+
+			// authorize() already notes a decline or a hold; only a real authorization is announced here.
+			if ( Pensopay_Api_Transaction::is_authorized_state( $state ) ) {
+				/* translators: %s: authorized amount */
+				$order->add_order_note( sprintf( __( 'Subscription payment authorized. Amount: %s', Pensopay_Payments_V2_Gateway::TEXT_DOMAIN ), wc_price( $amount_to_charge, [ 'currency' => $order->get_currency() ] ) ) );
+			}
 		}
 	}
 

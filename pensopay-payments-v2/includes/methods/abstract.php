@@ -8,6 +8,9 @@ abstract class Pensopay_Payments_V2_Methods_Abstract extends WC_Payment_Gateway 
 
 	protected static $instances;
 
+	/** @var array<string,string> Gateway verdicts already resolved for the callback in flight. */
+	private static array $callback_outcomes = array();
+
 	public static function get_instance() {
 		$class = static::class;
 
@@ -78,7 +81,6 @@ abstract class Pensopay_Payments_V2_Methods_Abstract extends WC_Payment_Gateway 
 		return $gateways;
 	}
 
-
 	/**
 	 * Create payment
 	 *
@@ -104,7 +106,6 @@ abstract class Pensopay_Payments_V2_Methods_Abstract extends WC_Payment_Gateway 
 				$this->_orderSuffix = '-' . rand( 10000, 99999 );
 //			}
 
-
 			$transaction = Pensopay_Api_Transaction::from_order( $order );
 			$params      = Pensopay_Payments_V2_Helpers_Subscription::treat_order_as_subscription( $order ) ? $this->get_subscription_params( $order ) : $this->get_payment_params( $order );
 			$response    = $transaction->create( $params );
@@ -128,7 +129,6 @@ abstract class Pensopay_Payments_V2_Methods_Abstract extends WC_Payment_Gateway 
 			'response' => isset( $response ) ? $response : [],
 		];
 	}
-
 
 	/**
 	 * Handle refunds
@@ -201,11 +201,25 @@ abstract class Pensopay_Payments_V2_Methods_Abstract extends WC_Payment_Gateway 
 			return;
 		}
 
+		$this->run_callback( $order, $event, $callback );
+	}
+
+	/**
+	 * @param WC_Order $order
+	 * @param string   $event
+	 * @param object   $callback
+	 */
+	private function run_callback( $order, $event, $callback ): void {
 		$order_id = $order->get_id();
+
+		self::$callback_outcomes = array();
+		if ( self::callback_consults_gateway( $order, $event, $callback ) ) {
+			self::gateway_outcome( $callback->id ?? '' );
+		}
 
 		// Acquire database-level lock (atomic) to prevent concurrent callback processing
 		// If locked, return 503 with Retry-After so gateway will retry
-		$lock_name = 'pensopay_order_' . $order_id;
+		$lock_name = Pensopay_Payments_V2_Helpers_Order::get_order_lock_name( $order_id );
 		if ( ! $this->acquire_callback_lock( $lock_name ) ) {
 			Pensopay_Payments_V2_Logger::log( sprintf( 'Callback locked, returning 503: order #%d, event: %s', $order_id, $event ) );
 			status_header( 503 );
@@ -213,32 +227,50 @@ abstract class Pensopay_Payments_V2_Methods_Abstract extends WC_Payment_Gateway 
 			exit;
 		}
 
+		$transactionIdentifier = false;
+
 		try {
 			// Reload order after acquiring lock to get fresh state
 			// (order may have changed while waiting for lock)
-			// Clear cache first to avoid stale data
-			wp_cache_delete( $order_id, 'posts' );
-			wp_cache_delete( $order_id, 'post_meta' );
-			// Clear HPOS cache if using High-Performance Order Storage
-			if ( function_exists( 'wc_get_container' ) ) {
-				try {
-					$order_cache = wc_get_container()->get( \Automattic\WooCommerce\Caches\OrderCache::class );
-					$order_cache->remove( $order_id );
-				} catch ( \Exception $e ) {
-					// HPOS not active or cache not available, ignore
-				}
-			}
-			$order = wc_get_order( $order_id );
+			$order = Pensopay_Payments_V2_Helpers_Order::get_fresh_order( $order_id );
 
 			$transactionIdentifier = $this->process_callback_event( $order, $event, $callback );
-
-			if ( $transactionIdentifier ) {
-				$transaction = Pensopay_Api_Transaction::from_order( $order, true );
-				$transaction->cache_transaction();
-			}
 		} finally {
 			$this->release_callback_lock( $lock_name );
 		}
+
+		if ( $transactionIdentifier ) {
+			$transaction = Pensopay_Api_Transaction::from_order( $order, true );
+			$transaction->cache_transaction();
+		}
+	}
+
+	/**
+	 * @param WC_Order $order
+	 * @param string   $event
+	 * @param object   $callback
+	 */
+	private static function callback_consults_gateway( $order, $event, $callback ): bool {
+		if ( in_array( $event, array( 'payment.capture_failed', 'recurring.capture_failed', 'mandate.capture_failed' ), true ) ) {
+			return false;
+		}
+
+		// The capture handlers gate unconditionally, whatever state the order is in.
+		if ( in_array( $event, array( 'payment.captured', 'recurring.captured' ), true ) ) {
+			return true;
+		}
+
+		if ( $order->has_status( array( 'failed', 'cancelled' ) ) ) {
+			return false;
+		}
+
+		if ( Pensopay_Payments_V2_Helpers_Subscription::treat_order_as_subscription( $order ) ) {
+			return true;
+		}
+
+		return in_array( $event, array( 'payment.authorized', 'mandate.authorized', 'recurring.authorized' ), true )
+			&& ! $order->is_paid()
+			&& (string) $order->get_transaction_id() !== (string) ( $callback->id ?? '' );
 	}
 
 	/**
@@ -324,8 +356,9 @@ abstract class Pensopay_Payments_V2_Methods_Abstract extends WC_Payment_Gateway 
 				break;
 		}
 
-		if ( Pensopay_Payments_V2_Helpers_Subscription::plugin_is_active() ) {
-			// Auto-complete renewal orders if setting enabled (callback-agnostic, after all handler work)
+		if ( Pensopay_Payments_V2_Helpers_Subscription::treat_order_as_subscription( $order )
+			&& ! $order->has_status( array( 'failed', 'cancelled' ) )
+			&& self::gateway_confirms_payment( $callback->id ?? '' ) ) {
 			Pensopay_Payments_V2_Helpers_Subscription::on_payment_authorized( $order );
 		}
 
@@ -409,17 +442,13 @@ abstract class Pensopay_Payments_V2_Methods_Abstract extends WC_Payment_Gateway 
 			return false;
 		}
 
-		// Defence in depth: never complete an order from a resource the gateway reports in
-		// a terminal-negative state. Not what bit us above (a declined capture still reads
-		// 'authorized'), but these are documented payment states —
-		// https://docs.pensopay.com/reference/payment-states.md — and none of them means paid.
-		$state = isset( $callback->state ) ? (string) $callback->state : '';
-		if ( in_array( $state, array( 'rejected', 'canceled', 'cancelled', 'expired' ), true ) ) {
+		if ( ! self::gateway_permits_payment( $order, $callback ) ) {
 			Pensopay_Payments_V2_Logger::log( sprintf(
-				'Ignoring authorization for order #%d: gateway reports payment state "%s".',
-				$order->get_id(),
-				$state
+				'Ignoring %s authorization for order #%d: the gateway does not confirm that payment.',
+				$callback->id ?? 'unknown',
+				$order->get_id()
 			) );
+
 			return false;
 		}
 
@@ -458,6 +487,69 @@ abstract class Pensopay_Payments_V2_Methods_Abstract extends WC_Payment_Gateway 
 	}
 
 	/**
+	 * @param string|int $payment_id
+	 */
+	private static function gateway_confirms_payment( $payment_id ): bool {
+		return Pensopay_Api_Payment::OUTCOME_SUCCESS === self::gateway_outcome( $payment_id );
+	}
+
+	/**
+	 * @param WC_Order $order
+	 * @param object $callback
+	 */
+	private static function gateway_permits_payment( $order, $callback ): bool {
+		if ( Pensopay_Payments_V2_Helpers_Subscription::treat_order_as_subscription( $order ) ) {
+			return self::gateway_confirms_payment( $callback->id ?? '' );
+		}
+
+		$outcome = self::gateway_outcome( $callback->id ?? '' );
+
+		if ( Pensopay_Api_Payment::OUTCOME_UNDECIDED === $outcome ) {
+			return ! Pensopay_Api_Transaction::is_terminal_negative_state( $callback->state ?? '' );
+		}
+
+		return Pensopay_Api_Payment::OUTCOME_SUCCESS === $outcome;
+	}
+
+	/**
+	 * @param string|int $payment_id
+	 */
+	private static function gateway_outcome( $payment_id ): string {
+		$key = (string) $payment_id;
+
+		if ( ! isset( self::$callback_outcomes[ $key ] ) ) {
+			self::$callback_outcomes[ $key ] = self::resolve_gateway_outcome( $payment_id );
+		}
+
+		return self::$callback_outcomes[ $key ];
+	}
+
+	/**
+	 * @param string|int $payment_id
+	 */
+	private static function resolve_gateway_outcome( $payment_id ): string {
+		if ( ! $payment_id ) {
+			return Pensopay_Api_Payment::OUTCOME_UNDECIDED;
+		}
+
+		try {
+			$payment = new Pensopay_Api_Payment( $payment_id, true );
+			$data    = $payment->get_data();
+			$outcome = $payment->get_outcome( ! empty( $data->autocapture ) );
+		} catch ( \Throwable $e ) {
+			Pensopay_Payments_V2_Logger::error( sprintf(
+				'Could not confirm payment %s with the gateway: %s',
+				$payment_id,
+				$e->getMessage()
+			) );
+
+			return Pensopay_Api_Payment::OUTCOME_UNDECIDED;
+		}
+
+		return $outcome['outcome'];
+	}
+
+	/**
 	 * Handle payment.authorized callback
 	 */
 	private function handle_payment_authorized( $order, $callback ) {
@@ -473,15 +565,13 @@ abstract class Pensopay_Payments_V2_Methods_Abstract extends WC_Payment_Gateway 
 		// Ensure order is authorized first (handles race condition)
 		$this->ensure_order_authorized( $order, $callback );
 
+		if ( ! self::gateway_permits_payment( $order, $callback ) ) {
+			return $callback->id;
+		}
+
 		// Add capture note
 		if ( Pensopay_Payments_V2_Helper_Utility::is_option_enabled( $this->get_autocapture_setting( $order ) ) ) {
-			$order->add_order_note( sprintf(
-				/* translators: %1$s: currency, %2$s: amount, %3$s: transaction id */
-				__( 'Payment captured. Amount: %1$s %2$s. Transaction ID: %3$s', Pensopay_Payments_V2_Gateway::TEXT_DOMAIN ),
-				$callback->currency,
-				$callback->captured,
-				$callback->id
-			) );
+			$order->add_order_note( $this->get_capture_note( $callback ) );
 		}
 
 		// Complete order if setting enabled
@@ -491,6 +581,23 @@ abstract class Pensopay_Payments_V2_Methods_Abstract extends WC_Payment_Gateway 
 		}
 
 		return $callback->id;
+	}
+
+	/**
+	 * @param object $callback
+	 */
+	private function get_capture_note( $callback ): string {
+		$currency = $callback->currency ?? '';
+
+		return sprintf(
+			/* translators: %1$s: captured amount, %2$s: transaction id */
+			__( 'Payment captured. Amount: %1$s. Transaction ID: %2$s', Pensopay_Payments_V2_Gateway::TEXT_DOMAIN ),
+			wc_price(
+				Pensopay_Payments_V2_Helpers_Price::divide_price( $callback->captured ?? 0, $currency ),
+				array( 'currency' => $currency )
+			),
+			$callback->id
+		);
 	}
 
 	/**
@@ -536,6 +643,10 @@ abstract class Pensopay_Payments_V2_Methods_Abstract extends WC_Payment_Gateway 
 	private function handle_recurring_captured( $order, $callback ) {
 		$this->ensure_order_authorized( $order, $callback );
 
+		if ( ! self::gateway_confirms_payment( $callback->id ?? '' ) ) {
+			return $callback->subscription_id;
+		}
+
 		$subscriptions = Pensopay_Payments_V2_Helpers_Subscription::get_subscriptions_for_renewal_order( $order );
 
 		foreach ( $subscriptions as $subscription ) {
@@ -543,25 +654,13 @@ abstract class Pensopay_Payments_V2_Methods_Abstract extends WC_Payment_Gateway 
 
 			if ( $subscriptionId == $callback->subscription_id ) {
 				$subscription->update_status( 'active' );
-				$subscription->add_order_note( sprintf(
-				/* translators: %1$s: currency, %2$s: amount, %3$s: transaction id */
-					__( 'Payment captured. Amount: %1$s %2$s. Transaction ID: %3$s', Pensopay_Payments_V2_Gateway::TEXT_DOMAIN ),
-					$callback->currency,
-					$callback->captured,
-					$callback->id
-				) );
+				$subscription->add_order_note( $this->get_capture_note( $callback ) );
 				break;
 			}
 		}
 
 		// Add capture note to the renewal order
-		$order->add_order_note( sprintf(
-			/* translators: %1$s: currency, %2$s: amount, %3$s: transaction id */
-			__( 'Payment captured. Amount: %1$s %2$s. Transaction ID: %3$s', Pensopay_Payments_V2_Gateway::TEXT_DOMAIN ),
-			$callback->currency,
-			$callback->captured,
-			$callback->id
-		) );
+		$order->add_order_note( $this->get_capture_note( $callback ) );
 
 		// Complete renewal order if setting enabled (mirrors handle_payment_captured behavior)
 		$complete_on_capture = Pensopay_Payments_V2_Helper_Utility::get_setting( 'complete_on_capture' );
@@ -647,7 +746,6 @@ abstract class Pensopay_Payments_V2_Methods_Abstract extends WC_Payment_Gateway 
 			$params
 		);
 	}
-
 
 	/**
 	 * Get order number for gateway
@@ -995,7 +1093,6 @@ abstract class Pensopay_Payments_V2_Methods_Abstract extends WC_Payment_Gateway 
 					throw new \Exception( sprintf( 'Action: "cancel", is not allowed for order #%d, with state "%s"', $order->get_order_number(), $transaction->state ) );
 				}
 
-
 			} catch ( \Exception $e ) {
 				$order->add_order_note( sprintf( '%s: %s', __( 'Cancel failed' ), $e->getMessage() ) );
 				error_log( $e->getMessage() );
@@ -1229,7 +1326,6 @@ abstract class Pensopay_Payments_V2_Methods_Abstract extends WC_Payment_Gateway 
 
 		return [ 'card' ];
 	}
-
 
 	/**
 	 * Add icons to checkout

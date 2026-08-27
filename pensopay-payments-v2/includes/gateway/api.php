@@ -13,6 +13,8 @@ class Pensopay_Api {
 
 	protected static bool $is_api_available = true;
 
+	protected static bool $suppress_availability_kill_switch = false;
+
 	protected static string $api_key = '';
 
 	protected object $resource_data;
@@ -62,6 +64,21 @@ class Pensopay_Api {
 	}
 
 	/**
+	 * @param callable $callback
+	 * @return mixed
+	 */
+	public static function without_availability_kill_switch( callable $callback ) {
+		$previous                                = self::$suppress_availability_kill_switch;
+		self::$suppress_availability_kill_switch = true;
+
+		try {
+			return $callback();
+		} finally {
+			self::$suppress_availability_kill_switch = $previous;
+		}
+	}
+
+	/**
 	 * Perform pensopay API request
 	 *
 	 * @param $resource
@@ -98,7 +115,7 @@ class Pensopay_Api {
 		);
 
 		if ($response instanceof WP_Error) {
-			if ($method === 'GET') {
+			if ( $method === 'GET' && ! self::$suppress_availability_kill_switch ) {
 				self::$is_api_available = false;
 			}
 

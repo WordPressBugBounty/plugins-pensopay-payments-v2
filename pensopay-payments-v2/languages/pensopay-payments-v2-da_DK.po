@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: pensopay Payments v2\n"
 "Report-Msgid-Bugs-To: https://github.com/pensopay/pensopay-woocommerce/"
 "issues\n"
-"POT-Creation-Date: 2026-07-02T10:59:36+02:00\n"
+"POT-Creation-Date: 2026-08-26T10:22:47+00:00\n"
 "PO-Revision-Date: 2026-06-18 09:32+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -23,17 +23,17 @@ msgstr ""
 "X-Poedit-SearchPathExcluded-1: tests/node_modules\n"
 
 #. Plugin Name of the plugin
-#: pensopay.php
+#: pensopay.php:4
 msgid "pensopay Payments v2"
 msgstr "pensopay Betalinger v2"
 
 #. Plugin URI of the plugin
-#: pensopay.php
+#: pensopay.php:5
 msgid "http://wordpress.org/plugins/pensopay/"
 msgstr "http://wordpress.org/plugins/pensopay/"
 
 #. Description of the plugin
-#: pensopay.php
+#: pensopay.php:6
 msgid ""
 "Integrates your pensopay v2 payment gateway into your WooCommerce "
 "installation."
@@ -41,12 +41,12 @@ msgstr ""
 "Integrerer din pensopay v2 betalingsgateway i din WooCommerce-installation."
 
 #. Author of the plugin
-#: pensopay.php
+#: pensopay.php:8
 msgid "pensopay"
 msgstr "pensopay"
 
 #. Author URI of the plugin
-#: pensopay.php
+#: pensopay.php:11
 msgid "https://pensopay.com/"
 msgstr "https://pensopay.com/"
 
@@ -467,18 +467,24 @@ msgid ""
 "pensopay requires WooCommerce %1$s or greater to be installed and active."
 msgstr ""
 
-#: includes/gateway/api.php:76
+#: includes/gateway/api.php:96
 msgid "Pensopay API is not available"
 msgstr "pensopay API er utilgængeligt"
 
 #. translators: 1: HTTP status code, 2: raw response detail
-#: includes/gateway/api.php:132
+#: includes/gateway/api.php:152
 #, php-format
 msgid "pensopay API request failed (HTTP %1$s): %2$s"
 msgstr ""
 
+#. translators: %s: gateway payment state
+#: includes/gateway/types/payment.php:77
+#, php-format
+msgid "gateway state: %s"
+msgstr ""
+
 #. translators: %d: order id
-#: includes/gateway/types/subscription.php:94
+#: includes/gateway/types/subscription.php:99
 #, php-format
 msgid ""
 "Cannot authorize subscription renewal for order #%d: no pensopay "
@@ -487,26 +493,43 @@ msgid ""
 msgstr ""
 
 #. translators: %d: order id
-#: includes/gateway/types/subscription.php:130
+#: includes/gateway/types/subscription.php:135
 #, php-format
 msgid "Failed to authorize subscription payment for order #%d."
 msgstr ""
 
-#: includes/gateway/types/subscription.php:146
+#. translators: 1: gateway payment state, 2: gateway payment id, 3: decline reason
+#: includes/gateway/types/subscription.php:198
+#, php-format
+msgid ""
+"Subscription renewal declined by the acquirer (state: %1$s). Payment ID: "
+"%2$s. Reason: %3$s"
+msgstr ""
+"Abonnementsfornyelsen blev afvist af indløseren (status: %1$s). Betalings-"
+"ID: %2$s. Årsag: %3$s"
+
+#: includes/gateway/types/subscription.php:201
+msgid "no reason given by the acquirer"
+msgstr "ingen årsag oplyst af indløseren"
+
+#: includes/gateway/types/subscription.php:229
 msgid "Subscription payment authorized successfully"
 msgstr "Abonnementsbetaling autoriseret"
 
-#: includes/gateway/types/subscription.php:158
-#: includes/gateway/types/subscription.php:159
-#: includes/gateway/types/subscription.php:183
-#: includes/gateway/types/subscription.php:184
-msgid "Failed to capture subscription payment"
-msgstr "Mislykket trækning af abonnementsbetaling"
+#: includes/gateway/types/subscription.php:237
+#: includes/methods/abstract.php:507 includes/methods/abstract.php:598
+msgid "Payment completed."
+msgstr ""
 
-#: includes/gateway/types/subscription.php:162
-#: includes/gateway/types/subscription.php:187
-msgid "Subscription payment captured successfully"
-msgstr "Abonnementsbetaling hævet"
+#. translators: 1: gateway payment state, 2: gateway payment id
+#: includes/gateway/types/subscription.php:256
+#, php-format
+msgid ""
+"Renewal payment created, awaiting confirmation from pensopay (state: %1$s). "
+"Payment ID: %2$s"
+msgstr ""
+"Fornyelsesbetaling oprettet, afventer bekræftelse fra pensopay (status: "
+"%1$s). Betalings-ID: %2$s"
 
 #: includes/gateway/types/transaction.php:47
 msgid "Transaction ID cannot be empty"
@@ -549,57 +572,60 @@ msgid "Swedish"
 msgstr "Svensk"
 
 #. translators: Fee line item name shown on the order
-#: includes/helpers/order.php:28
+#: includes/helpers/order.php:29
 msgid "Payment fee"
 msgstr "Kortgebyr"
 
-#: includes/helpers/subscription.php:55
+#: includes/helpers/subscription.php:118
 msgid ""
 "Automatically completing order status due to successful recurring payment"
 msgstr ""
 "Automatisk markér ordrer som gennemført ved successfuld abonnementsbetaling"
 
 #. translators: %s: order id
-#: includes/methods/abstract.php:111
+#: includes/methods/abstract.php:116
 #, php-format
 msgid "Invalid payment link received from API for order -parent- #%1$s"
 msgstr "Ugyldigt betalingslink modtaget fra API til overordnet ordre- #%1$s"
 
 #. translators: %s: order id
-#: includes/methods/abstract.php:146
+#: includes/methods/abstract.php:151
 #, php-format
 msgid "No transaction ID found for order: %s"
 msgstr "Intet transaktions-id blev fundet for ordre: %s"
 
 #. translators: %s: refunded amount
-#: includes/methods/abstract.php:156
+#: includes/methods/abstract.php:161
 #, php-format
 msgid "Order refunded successfully. Refunded amount: %s"
 msgstr "Ordren refunderes. Refunderet beløb: %s"
 
-#: includes/methods/abstract.php:159
+#: includes/methods/abstract.php:164
 msgid "Order is in invalid state for refund."
 msgstr ""
 
+#. translators: %s: gateway callback event name
+#: includes/methods/abstract.php:353
+#, php-format
+msgid "pensopay reported a failed/declined payment event (%s) for this order."
+msgstr ""
+"pensopay rapporterede en mislykket/afvist betalingshændelse (%s) for denne "
+"ordre."
+
 #. translators: %s: transaction id
-#: includes/methods/abstract.php:347
+#: includes/methods/abstract.php:442
 #, php-format
 msgid "Payment authorized. Transaction ID: %s"
 msgstr "Betaling autoriseret. Transaktions ID: %s"
 
-#. translators: %1$s: currency, %2$s: amount, %3$s: transaction id
-#: includes/methods/abstract.php:376 includes/methods/abstract.php:431
-#: includes/methods/abstract.php:443
+#. translators: %1$s: captured amount, %2$s: transaction id
+#: includes/methods/abstract.php:524
 #, php-format
-msgid "Payment captured. Amount: %1$s %2$s. Transaction ID: %3$s"
-msgstr "Betaling hævet. Beløb: %1$s %2$s. Transaktions-id: %3$s"
-
-#: includes/methods/abstract.php:386 includes/methods/abstract.php:452
-msgid "Payment completed."
-msgstr ""
+msgid "Payment captured. Amount: %1$s. Transaction ID: %2$s"
+msgstr "Betaling hævet. Beløb: %1$s. Transaktions-id: %2$s"
 
 #. translators: %s: order number
-#: includes/methods/abstract.php:835
+#: includes/methods/abstract.php:981
 #, php-format
 msgid ""
 "pensopay: order %s has no linked pensopay payment to capture (the renewal "
@@ -607,23 +633,23 @@ msgid ""
 msgstr ""
 
 #. translators: %s: captured amount
-#: includes/methods/abstract.php:851
+#: includes/methods/abstract.php:997
 #, php-format
 msgid "Payment captured automatically. Captured amount: %s"
 msgstr "Betaling er trukket automatisk. Hævet beløb: %s"
 
 #. translators: 1: order number, 2: payment state
-#: includes/methods/abstract.php:858
+#: includes/methods/abstract.php:1004
 #, php-format
 msgid ""
 "Action: \"capture\", is not allowed for order #%1$s, with state \"%2$s\""
 msgstr ""
 
-#: includes/methods/abstract.php:865
+#: includes/methods/abstract.php:1011
 msgid "Capture failed"
 msgstr "Trækning af beløb mislykkedes"
 
-#: includes/methods/abstract.php:910
+#: includes/methods/abstract.php:1056
 msgid "pensopay: Subscription cancelled on gateway."
 msgstr "Abonnement annulleret i pensopay gateway"
 
@@ -672,10 +698,10 @@ msgid "pensopay credit card"
 msgstr "pensopay betalingskort"
 
 #. translators: %s: authorized amount
-#: includes/methods/creditcard.php:91
+#: includes/methods/creditcard.php:94
 #, php-format
 msgid "Subscription payment authorized. Amount: %s"
-msgstr "Betaling autoriseret. Transaktions ID: %s"
+msgstr "Abonnementsbetaling autoriseret. Beløb: %s"
 
 #: includes/methods/googlepay.php:14
 msgid "Google Pay"
@@ -994,20 +1020,20 @@ msgid "Pay with ViaBill"
 msgstr "Betal med ViaBill"
 
 #: includes/methods/vippsepayment.php:14 includes/methods/vippsepayment.php:43
-msgid "VippsMobilePay ePayment"
-msgstr "VippsMobilePay"
+msgid "Vipps MobilePay"
+msgstr "Vipps MobilePay"
 
 #: includes/methods/vippsepayment.php:22
-msgid "Accept VippsMobilePay ePayment payments through pensopay"
-msgstr "Modtag VippsMobilePay-betalinger med pensopay"
+msgid "Accept Vipps MobilePay payments through pensopay"
+msgstr "Modtag Vipps MobilePay-betalinger med pensopay"
 
 #: includes/methods/vippsepayment.php:35
-msgid "Enable VippsMobilePay ePayment"
-msgstr "Aktivér VippsMobilePay"
+msgid "Enable Vipps MobilePay"
+msgstr "Aktivér Vipps MobilePay"
 
 #: includes/methods/vippsepayment.php:50
-msgid "Pay with VippsMobilePay ePayment"
-msgstr "Betal med VippsMobilePay"
+msgid "Pay with Vipps MobilePay"
+msgstr "Betal med Vipps MobilePay"
 
 #: includes/methods/vippspsp.php:14 includes/methods/vippspsp.php:43
 msgid "Vipps"
@@ -1121,21 +1147,21 @@ msgstr "Ordre ID"
 msgid "Method"
 msgstr "Metode"
 
-#: views/html-order-table-transaction-data.php:27
+#: views/html-order-table-transaction-data.php:29
 #: views/html-subscription-table-transaction-data.php:23
 msgid "This order has been paid with test card data!"
 msgstr "Denne ordre er blevet betalt med et testkort!"
 
-#: views/html-order-table-transaction-data.php:29
+#: views/html-order-table-transaction-data.php:31
 #: views/html-subscription-table-transaction-data.php:25
 msgid "Test"
 msgstr "Test"
 
-#: views/html-order-table-transaction-data.php:40
+#: views/html-order-table-transaction-data.php:42
 msgid "Sub"
 msgstr "Emne"
 
-#: views/html-order-table-transaction-data.php:45
+#: views/html-order-table-transaction-data.php:47
 #: views/html-subscription-table-transaction-data.php:35
 msgid ""
 "NB: The transaction data is served from cached results. Click to view the "
@@ -1144,10 +1170,83 @@ msgstr ""
 "NB: Transaktions-dataen vises fra et cache resultat. Klik på ordren for at "
 "opdatere den cachede data."
 
-#: views/html-order-table-transaction-data.php:47
+#: views/html-order-table-transaction-data.php:49
 #: views/html-subscription-table-transaction-data.php:37
 msgid "Cached"
 msgstr "Cached"
+
+#~ msgid "VippsMobilePay ePayment"
+#~ msgstr "VippsMobilePay"
+
+#~ msgid "Accept VippsMobilePay ePayment payments through pensopay"
+#~ msgstr "Modtag VippsMobilePay-betalinger med pensopay"
+
+#~ msgid "Enable VippsMobilePay ePayment"
+#~ msgstr "Aktivér VippsMobilePay"
+
+#~ msgid "Pay with VippsMobilePay ePayment"
+#~ msgstr "Betal med VippsMobilePay"
+
+#, php-format
+#~ msgid ""
+#~ "Subscription renewal declined by the gateway (state: %1$s). Payment ID: "
+#~ "%2$s"
+#~ msgstr ""
+#~ "Abonnementsfornyelsen blev afvist af betalingsgatewayen (status: %1$s). "
+#~ "Betalings-ID: %2$s"
+
+#, php-format
+#~ msgid ""
+#~ "Renewal payment created, awaiting authorization (state: %1$s). Payment "
+#~ "ID: %2$s"
+#~ msgstr ""
+#~ "Fornyelsesbetaling oprettet, afventer godkendelse (status: %1$s). "
+#~ "Betalings-ID: %2$s"
+
+#, php-format
+#~ msgid ""
+#~ "Subscription renewal capture declined by the acquirer. Payment ID: %1$s. "
+#~ "Reason: %2$s"
+#~ msgstr ""
+#~ "Abonnementsfornyelsens hævning blev afvist af indløseren. Betalings-ID: "
+#~ "%1$s. Årsag: %2$s"
+
+#, php-format
+#~ msgid ""
+#~ "Renewal payment authorized, awaiting capture confirmation. Payment ID: %s"
+#~ msgstr ""
+#~ "Fornyelsesbetaling godkendt, afventer bekræftelse af hævningen. Betalings-"
+#~ "ID: %s"
+
+#, php-format
+#~ msgid "Renewal payment confirmed with the gateway. Payment ID: %s"
+#~ msgstr ""
+#~ "Fornyelsesbetaling bekræftet hos betalingsgatewayen. Betalings-ID: %s"
+
+#, php-format
+#~ msgid ""
+#~ "ACTION REQUIRED: pensopay has not reported an outcome for this renewal "
+#~ "payment. Payment ID: %1$s. Gateway state: %2$s. No further automatic "
+#~ "checks will run. Confirm the payment in the pensopay dashboard and "
+#~ "resolve this order manually."
+#~ msgstr ""
+#~ "HANDLING PÅKRÆVET: pensopay har ikke rapporteret et resultat for denne "
+#~ "fornyelsesbetaling. Betalings-ID: %1$s. Gateway-status: %2$s. Der køres "
+#~ "ikke flere automatiske kontroller. Bekræft betalingen i pensopay-"
+#~ "dashboardet, og afslut denne ordre manuelt."
+
+#~ msgid "unknown"
+#~ msgstr "ukendt"
+
+#, php-format
+#~ msgid "Payment captured. Amount: %1$s %2$s. Transaction ID: %3$s"
+#~ msgstr "Betaling hævet. Beløb: %1$s %2$s. Transaktions-id: %3$s"
+
+#~ msgid "Failed to capture subscription payment"
+#~ msgstr "Mislykket trækning af abonnementsbetaling"
+
+#~ msgid "Subscription payment captured successfully"
+#~ msgstr "Abonnementsbetaling hævet"
 
 #~ msgid "Failed to authorize subscription payment"
 #~ msgstr "Mislykket abonnementsbetaling"

@@ -80,6 +80,10 @@ class Pensopay_Api_Subscription extends Pensopay_Api_Transaction {
 		return self::post( 'subscriptions', $params );
 	}
 
+	/**
+	 * @return string The gateway state that was acted on, or '' when nothing was claimed.
+	 * @throws Exception
+	 */
 	public function authorize( $order_id, $amount, $autocapture = false ) {
 		$order = wc_get_order( $order_id );
 
@@ -142,10 +146,122 @@ class Pensopay_Api_Subscription extends Pensopay_Api_Transaction {
 		$payment->set_data( $result );
 		$payment->cache_transaction();
 
-		Pensopay_Payments_V2_Helpers_Order::save_all_order_meta( $order, $result );
-		$order->set_status( 'processing', __( 'Subscription payment authorized successfully', Pensopay_Payments_V2_Gateway::TEXT_DOMAIN ) );
-		$order->set_transaction_id( $result->id );
+		$state = $payment->get_state();
+
+		$outcome = $payment->get_outcome( (bool) $autocapture );
+
+		$locked = Pensopay_Payments_V2_Helpers_Order::acquire_order_lock( $order_id );
+
+		try {
+			$order = Pensopay_Payments_V2_Helpers_Order::get_fresh_order( $order_id ) ?: $order;
+
+			Pensopay_Payments_V2_Helpers_Order::save_all_order_meta( $order, $result );
+
+			return $this->apply_renewal_outcome( $order, $result, $state, $outcome );
+		} finally {
+			if ( $locked ) {
+				Pensopay_Payments_V2_Helpers_Order::release_order_lock( $order_id );
+			}
+		}
+	}
+
+	/**
+	 * @param array{outcome:string, message:string} $outcome
+	 * @return string The gateway state that was acted on, or '' when nothing was claimed.
+	 */
+	private function apply_renewal_outcome( $order, $result, string $state, array $outcome ): string {
+		$order_id = $order->get_id();
+
+		if ( Pensopay_Api_Payment::OUTCOME_FAILED === $outcome['outcome'] ) {
+			if ( $order->is_paid() && (string) $order->get_transaction_id() === (string) $result->id ) {
+				Pensopay_Payments_V2_Logger::log( sprintf(
+					'Not failing order #%d for %s: a callback already promoted this same payment (%s).',
+					$order_id,
+					$result->id,
+					$order->get_status()
+				) );
+
+				return '';
+			}
+
+			$message = sprintf(
+				/* translators: 1: gateway payment state, 2: gateway payment id, 3: decline reason */
+				__( 'Subscription renewal declined by the acquirer (state: %1$s). Payment ID: %2$s. Reason: %3$s', Pensopay_Payments_V2_Gateway::TEXT_DOMAIN ),
+				$state ?: 'unknown',
+				$result->id,
+				$outcome['message'] ?: __( 'no reason given by the acquirer', Pensopay_Payments_V2_Gateway::TEXT_DOMAIN )
+			);
+
+			self::fail_renewal( $order, $message );
+
+			return '';
+		}
+
+		if ( $order->has_status( array( 'failed', 'cancelled' ) ) ) {
+			Pensopay_Payments_V2_Logger::log( sprintf(
+				'Ignoring %s renewal response for order #%d: order is already %s.',
+				$result->id,
+				$order_id,
+				$order->get_status()
+			) );
+
+			return '';
+		}
+
+		if ( Pensopay_Api_Payment::OUTCOME_SUCCESS === $outcome['outcome'] ) {
+			// A callback already settled this; do not downgrade a completed order to processing.
+			if ( $order->is_paid() && (string) $order->get_transaction_id() === (string) $result->id ) {
+				return $state;
+			}
+
+			$order->set_status( 'processing', __( 'Subscription payment authorized successfully', Pensopay_Payments_V2_Gateway::TEXT_DOMAIN ) );
+			$order->set_transaction_id( $result->id );
+			$order->save();
+
+			// Proof of capture in hand, so honour complete_on_capture without waiting for a webhook.
+			if ( ! empty( $outcome['captured'] )
+				&& Pensopay_Payments_V2_Helper_Utility::is_option_enabled( Pensopay_Payments_V2_Helper_Utility::get_setting( 'complete_on_capture' ) )
+				&& ! $order->has_status( 'completed' ) ) {
+				$order->update_status( 'completed', __( 'Payment completed.', Pensopay_Payments_V2_Gateway::TEXT_DOMAIN ) );
+			}
+
+			return $state;
+		}
+
+		if ( $order->is_paid() ) {
+			$order->set_transaction_id( $result->id );
+			$order->save();
+
+			return '';
+		}
+
+		$order->add_order_note( sprintf(
+			/* translators: 1: gateway payment state, 2: gateway payment id */
+			__( 'Renewal payment created, awaiting confirmation from pensopay (state: %1$s). Payment ID: %2$s', Pensopay_Payments_V2_Gateway::TEXT_DOMAIN ),
+			$state ?: 'unknown',
+			$result->id
+		) );
 		$order->save();
+
+		return '';
+	}
+
+	private static function fail_renewal( $order, string $message ): void {
+		Pensopay_Payments_V2_Logger::error( sprintf( 'Order #%d: %s', $order->get_id(), $message ) );
+
+		if ( ! $order->has_status( 'failed' ) ) {
+			$order->update_status( 'failed', $message );
+
+			return;
+		}
+
+		$order->add_order_note( $message );
+
+		foreach ( Pensopay_Payments_V2_Helpers_Subscription::get_subscriptions_for_renewal_order( $order ) as $subscription ) {
+			if ( method_exists( $subscription, 'payment_failed_for_related_order' ) ) {
+				$subscription->payment_failed_for_related_order( 'on-hold', $order );
+			}
+		}
 	}
 
 	/**

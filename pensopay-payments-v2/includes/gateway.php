@@ -93,7 +93,7 @@ class Pensopay_Payments_V2_Gateway extends Pensopay_Payments_V2_Abstract {
 		$methods[] = 'Pensopay_Payments_V2_Methods_ApplePay';
 		$methods[] = 'Pensopay_Payments_V2_Methods_GooglePay';
 		$methods[] = 'Pensopay_Payments_V2_Methods_VippsPsp';
-		// $methods[] = 'Pensopay_Payments_V2_Methods_VippsEpayment';
+		$methods[] = 'Pensopay_Payments_V2_Methods_VippsEpayment';
 		$methods[] = 'Pensopay_Payments_V2_Methods_Paypal';
 		$methods[] = 'Pensopay_Payments_V2_Methods_Multibanco';
 		$methods[] = 'Pensopay_Payments_V2_Methods_StripePayco';
@@ -187,7 +187,7 @@ class Pensopay_Payments_V2_Gateway extends Pensopay_Payments_V2_Abstract {
 		require_once PPV2_PATH . '/includes/methods/applepay.php';
 		require_once PPV2_PATH . '/includes/methods/googlepay.php';
 		require_once PPV2_PATH . '/includes/methods/vippspsp.php';
-		// require_once PPV2_PATH . '/includes/methods/vippsepayment.php';
+		require_once PPV2_PATH . '/includes/methods/vippsepayment.php';
 		require_once PPV2_PATH . '/includes/methods/paypal.php';
 		require_once PPV2_PATH . '/includes/methods/multibanco.php';
 		require_once PPV2_PATH . '/includes/methods/stripe-payco.php';

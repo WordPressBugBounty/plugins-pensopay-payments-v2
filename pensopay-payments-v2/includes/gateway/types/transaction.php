@@ -178,6 +178,18 @@ class Pensopay_Api_Transaction extends Pensopay_Api {
 		}
 	}
 
+	// https://docs.pensopay.com/reference/payment-states.md
+	const TERMINAL_NEGATIVE_STATES = array( 'rejected', 'canceled', 'cancelled', 'expired' );
+
+	const AUTHORIZED_STATES = array( 'authorized', 'captured' );
+
+	public static function is_terminal_negative_state( $state ): bool {
+		return in_array( (string) $state, self::TERMINAL_NEGATIVE_STATES, true );
+	}
+
+	public static function is_authorized_state( $state ): bool {
+		return in_array( (string) $state, self::AUTHORIZED_STATES, true );
+	}
 
 	public function get_brand(): string {
 		return self::get_data()->payment_details->brand ?? '';

@@ -4,7 +4,7 @@ Tags: gateway, woocommerce, pensopay, payment, psp
 Requires at least: 6.3
 Tested up to: 6.8.2
 Requires PHP: 7.4
-Stable tag: 2.1.5
+Stable tag: 2.1.6
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -14,7 +14,7 @@ Integrates your pensopay V2 payment gateway into your WooCommerce installation.
 <u>Important: This plugin supports pensopay v2 payments via app.pensopay.com. If you are not sure it’s the right one, please reach out to us before proceeding.</u>
 
 With pensopay payments v2 you are able to integrate pensopay v2 gateway with your WooCommerce.
-In moments you will be able to receive payments via credit card, MobilePay, Apple Pay,  Viabill, Anyday, Swish.
+In moments you will be able to receive payments via credit card, MobilePay, Apple Pay,  Viabill, Anyday, Swish, Vipps MobilePay.
 
 Capture, refund and cancel payments directly from your WooCommerce Store.
 
@@ -39,6 +39,10 @@ General:
 2. WooCommerce >= 8.2
 
 == Changelog ==
+= 2.1.6 =
+* Feature: Added Vipps MobilePay payment method
+* Fix: a subscription renewal the gateway did not confirm is no longer marked paid, and now fails so the retry schedule applies
+
 = 2.1.5 =
 * Fix: payment methods without a card brand (Anyday, ViaBill and every other alternative method) now show their own logo in the order overview instead of no logo
 * Fix: a reported card brand is only used when the matching logo file exists, so brands whose logo ships only as a PNG no longer render a broken image

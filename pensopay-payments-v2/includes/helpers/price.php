@@ -49,6 +49,14 @@ class Pensopay_Payments_V2_Helpers_Price {
 		return ! in_array( strtoupper( $currency ), $non_decimal_currencies, true );
 	}
 
+	public static function divide_price( $price, $currency = false ) {
+		if ( $currency && ! self::is_currency_using_decimals( $currency ) ) {
+			return $price;
+		}
+
+		return self::normalize_price( $price );
+	}
+
 	/**
 	 * Normalize price
 	 *

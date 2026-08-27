@@ -11,7 +11,7 @@ class Pensopay_Payments_V2_Methods_VippsEpayment extends Pensopay_Payments_V2_Me
 			'refunds'
 		);
 
-		$this->method_title = __( 'VippsMobilePay ePayment', Pensopay_Payments_V2_Gateway::TEXT_DOMAIN );
+		$this->method_title = __( 'Vipps MobilePay', Pensopay_Payments_V2_Gateway::TEXT_DOMAIN );
 
 		$this->init_form_fields();
 		$this->init_settings();
@@ -19,7 +19,7 @@ class Pensopay_Payments_V2_Methods_VippsEpayment extends Pensopay_Payments_V2_Me
 
 		$this->title              = $this->get_option( 'title' );
 		$this->description        = $this->get_option( 'description' );
-		$this->method_description = __( 'Accept VippsMobilePay ePayment payments through pensopay', Pensopay_Payments_V2_Gateway::TEXT_DOMAIN );
+		$this->method_description = __( 'Accept Vipps MobilePay payments through pensopay', Pensopay_Payments_V2_Gateway::TEXT_DOMAIN );
 
 		add_filter( 'pensopay_payments_facilitator_' . $this->id, array( $this, 'set_facilitator' ) );
 		add_filter( 'pensopay_payments_' . $this->id . '_methods', array( $this, 'set_method' ) );
@@ -32,7 +32,7 @@ class Pensopay_Payments_V2_Methods_VippsEpayment extends Pensopay_Payments_V2_Me
 			array(
 				'enabled'     => array(
 					'title'   => __( 'Enable/Disable', Pensopay_Payments_V2_Gateway::TEXT_DOMAIN ),
-					'label'   => __( 'Enable VippsMobilePay ePayment', Pensopay_Payments_V2_Gateway::TEXT_DOMAIN ),
+					'label'   => __( 'Enable Vipps MobilePay', Pensopay_Payments_V2_Gateway::TEXT_DOMAIN ),
 					'type'    => 'checkbox',
 					'default' => 'no',
 				),
@@ -40,14 +40,14 @@ class Pensopay_Payments_V2_Methods_VippsEpayment extends Pensopay_Payments_V2_Me
 					'title'       => __( 'Title', Pensopay_Payments_V2_Gateway::TEXT_DOMAIN ),
 					'type'        => 'text',
 					'description' => __( 'This controls the title which the user sees during checkout.', Pensopay_Payments_V2_Gateway::TEXT_DOMAIN ),
-					'default'     => __( 'VippsMobilePay ePayment', Pensopay_Payments_V2_Gateway::TEXT_DOMAIN ),
+					'default'     => __( 'Vipps MobilePay', Pensopay_Payments_V2_Gateway::TEXT_DOMAIN ),
 					'desc_tip'    => true,
 				),
 				'description' => array(
 					'title'       => __( 'Description', Pensopay_Payments_V2_Gateway::TEXT_DOMAIN ),
 					'type'        => 'text',
 					'description' => __( 'This controls the description which the user sees during checkout.', Pensopay_Payments_V2_Gateway::TEXT_DOMAIN ),
-					'default'     => __( 'Pay with VippsMobilePay ePayment', Pensopay_Payments_V2_Gateway::TEXT_DOMAIN ),
+					'default'     => __( 'Pay with Vipps MobilePay', Pensopay_Payments_V2_Gateway::TEXT_DOMAIN ),
 					'desc_tip'    => true,
 				)
 			)
@@ -98,10 +98,17 @@ class Pensopay_Payments_V2_Methods_VippsEpayment extends Pensopay_Payments_V2_Me
 	 * @return array
 	 */
 	public function should_disable_gateway( $gateways ) {
-		if ( isset( $gateways[ $this->id ] ) && self::is_checkout_context() ) {
+		if ( isset( $gateways[ $this->id ] ) && self::is_checkout_context() && WC()->cart ) {
+			$context_currency   = strtoupper( get_woocommerce_currency() );
+			$allowed_currencies = array( 'NOK', 'DKK', 'EUR' );
+
+			if ( ! in_array( $context_currency, $allowed_currencies, true ) ) {
+				unset( $gateways[ $this->id ] );
+				return $gateways;
+			}
+
 			if ( Pensopay_Payments_V2_Helpers_Subscription::cart_has_subscription() ) {
 				unset( $gateways[ $this->id ] );
-
 				return $gateways;
 			}
 		}
