@@ -103,10 +103,10 @@ class Pensopay_Payments_V2_Admin_Panel extends Pensopay_Payments_V2_Abstract {
 					$amount     = isset( $_REQUEST['pensopay_amount'] )
 						? Pensopay_Payments_V2_Helpers_Price::price_custom_to_multiplied( sanitize_text_field( wp_unslash( $_REQUEST['pensopay_amount'] ) ), $order->get_currency() )
 						: $remaining;
-                    $realAmount = $amount / 100;
+					$realAmount = Pensopay_Payments_V2_Helpers_Price::divide_price( $amount, $order->get_currency() );
 
                     $transaction->{$action}( $amount );
-					$order->add_order_note( 'pensopay: ' . sprintf( '%s: %s', $action, wc_price( $realAmount ) ) );
+					$order->add_order_note( 'pensopay: ' . sprintf( '%s: %s', $action, wc_price( $realAmount, [ 'currency' => $order->get_currency() ] ) ) );
 				} else {
 					$message = sprintf(
 						'Action: "%s", is not allowed for order #%d, with state "%s"',

@@ -2,9 +2,9 @@
 Contributors: pensopay
 Tags: gateway, woocommerce, pensopay, payment, psp
 Requires at least: 6.3
-Tested up to: 6.8.2
+Tested up to: 7.1.4
 Requires PHP: 7.4
-Stable tag: 2.1.6
+Stable tag: 2.1.7
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -39,6 +39,10 @@ General:
 2. WooCommerce >= 8.2
 
 == Changelog ==
+= 2.1.7 =
+* Fix: refund, capture comments showed wrong currency and defaulted to DKK
+* Fix: Updated dependencies
+
 = 2.1.6 =
 * Feature: Added Vipps MobilePay payment method
 * Fix: a subscription renewal the gateway did not confirm is no longer marked paid, and now fails so the retry schedule applies
