@@ -1,5 +1,7 @@
 <?php
 
+defined( 'ABSPATH' ) || exit;
+
 class Pensopay_Payment_Link_Email extends WC_Email {
 	private $ppv2_template_path;
 

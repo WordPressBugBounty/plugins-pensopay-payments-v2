@@ -36,6 +36,10 @@ class Pensopay_Payments_V2_Gateway extends Pensopay_Payments_V2_Abstract {
 		// Load plugin text domain
 		add_action( 'init', [ $this, 'load_plugin_textdomain' ] );
 
+		if ( is_admin() ) {
+			add_filter( 'gettext_woocommerce-subscriptions', [ Pensopay_Payments_V2_Helpers_Localization::class, 'translate_subscriptions_fallback' ], 10, 2 );
+		}
+
 		add_filter( 'woocommerce_payment_gateways', [ $this, 'add_gateways' ] );
 		add_filter( 'plugin_row_meta', [ $this, 'plugin_row_meta' ], 10, 2 );
 		add_filter( 'plugin_action_links_' . plugin_basename( __FILE__ ), [ $this, 'plugin_action_links' ] );

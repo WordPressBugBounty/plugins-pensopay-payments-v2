@@ -49,6 +49,171 @@ abstract class Pensopay_Payments_V2_Methods_Abstract extends WC_Payment_Gateway 
 
 		add_filter( 'woocommerce_gateway_icon', array( $this, 'apply_gateway_icons' ), 2, 3 );
 		add_filter( 'woocommerce_available_payment_gateways', array( $this, 'maybe_disable_by_account_methods' ) );
+
+		if ( $this->supports( 'subscriptions' ) ) {
+			add_filter( 'woocommerce_subscription_payment_meta', array( $this, 'add_subscription_payment_meta' ), 10, 2 );
+			add_action( 'woocommerce_subscription_validate_payment_meta', array( $this, 'validate_subscription_payment_meta' ), 10, 3 );
+		}
+	}
+
+	/**
+	 * Expose the pensopay subscription id as an editable field under "Payment method"
+	 * in the Billing section of the WC Subscriptions admin edit screen (parity with v1).
+	 * WCS shows it only while this gateway is selected and saves it as subscription meta.
+	 *
+	 * @param array    $payment_meta
+	 * @param WC_Order $subscription A WC_Subscription (WC_Order subclass).
+	 *
+	 * @return array
+	 */
+	public function add_subscription_payment_meta( $payment_meta, $subscription ) {
+		$payment_meta[ $this->id ] = array(
+			'post_meta' => array(
+				'_pensopay_payment_subscription_id' => array(
+					'value' => $subscription instanceof WC_Order ? Pensopay_Payments_V2_Helpers_Subscription::get_subscription_id( $subscription, false ) : '',
+					'label' => __( 'PensoPay Subscription ID', Pensopay_Payments_V2_Gateway::TEXT_DOMAIN ),
+				),
+			),
+		);
+
+		return $payment_meta;
+	}
+
+	/**
+	 * Validate the admin-entered subscription id before WCS saves it. When the id changes,
+	 * the stored mandate belongs to the old subscription, so it is cleared; renewals then
+	 * post without a mandate_id and the gateway uses the new subscription's mandate.
+	 * Unpaid renewal orders get the same treatment so a retry charges the new subscription.
+	 *
+	 * @param string        $payment_method_id
+	 * @param array         $payment_meta
+	 * @param WC_Order|null $subscription A WC_Subscription (WC_Order subclass).
+	 *
+	 * @throws Exception When the id is empty; WCS shows the message as an admin notice.
+	 */
+	public function validate_subscription_payment_meta( $payment_method_id, $payment_meta, $subscription = null ) {
+		if ( $payment_method_id !== $this->id ) {
+			return;
+		}
+
+		$new_id = trim( (string) ( $payment_meta['post_meta']['_pensopay_payment_subscription_id']['value'] ?? '' ) );
+
+		if ( $new_id === '' ) {
+			throw new Exception( __( 'A "PensoPay Subscription ID" value is required.', Pensopay_Payments_V2_Gateway::TEXT_DOMAIN ) );
+		}
+
+		$old_id = $subscription instanceof WC_Order ? trim( (string) $subscription->get_meta( '_pensopay_payment_subscription_id' ) ) : '';
+
+		if ( $old_id === $new_id ) {
+			return;
+		}
+
+		self::assert_gateway_subscription_exists( $new_id );
+
+		if ( $subscription instanceof WC_Order ) {
+			// WCS saves this same object after validation, so the delete is persisted with it.
+			$subscription->delete_meta_data( '_pensopay_payment_mandate_id' );
+
+			$note = sprintf(
+				/* translators: 1: previous pensopay subscription id, 2: new pensopay subscription id */
+				__( 'PensoPay Subscription ID changed from %1$s to %2$s. The stored mandate was cleared.', Pensopay_Payments_V2_Gateway::TEXT_DOMAIN ),
+				$old_id !== '' ? $old_id : '-',
+				$new_id
+			);
+
+			$repointed = self::repoint_unpaid_renewal_orders( $subscription, $old_id, $new_id );
+			if ( ! empty( $repointed ) ) {
+				$note .= ' ' . sprintf(
+					/* translators: %s: comma-separated list of order numbers, e.g. "#123, #124" */
+					__( 'Unpaid renewal orders updated: %s.', Pensopay_Payments_V2_Gateway::TEXT_DOMAIN ),
+					implode( ', ', $repointed )
+				);
+			}
+
+			$subscription->add_order_note( $note );
+		}
+	}
+
+	/**
+	 * Renewal orders carry their own copy of the subscription id and mandate (WCS copies the
+	 * meta on creation), and the renewal charge reads the order's copy first. Without this,
+	 * retrying a pending or failed renewal would charge the old pensopay subscription. Paid
+	 * and cancelled orders are left alone: they record what was actually charged.
+	 *
+	 * @param WC_Order $subscription A WC_Subscription (WC_Order subclass).
+	 * @param string   $old_id
+	 * @param string   $new_id
+	 *
+	 * @return string[] Order numbers ("#123") of the orders that were updated.
+	 */
+	protected static function repoint_unpaid_renewal_orders( $subscription, string $old_id, string $new_id ): array {
+		if ( ! method_exists( $subscription, 'get_related_orders' ) ) {
+			return array();
+		}
+
+		$repointed = array();
+
+		foreach ( (array) $subscription->get_related_orders( 'all', 'renewal' ) as $order ) {
+			if ( ! $order instanceof WC_Order || ! $order->needs_payment() ) {
+				continue;
+			}
+
+			// These are separate objects from the subscription, so they must be saved here.
+			$order->update_meta_data( '_pensopay_payment_subscription_id', $new_id );
+			$order->delete_meta_data( '_pensopay_payment_mandate_id' );
+			$order->add_order_note(
+				sprintf(
+					/* translators: 1: previous pensopay subscription id, 2: new pensopay subscription id */
+					__( 'PensoPay Subscription ID changed from %1$s to %2$s on the subscription. This order now uses the new ID and its stored mandate was cleared.', Pensopay_Payments_V2_Gateway::TEXT_DOMAIN ),
+					$old_id !== '' ? $old_id : '-',
+					$new_id
+				)
+			);
+			$order->save();
+
+			$repointed[] = '#' . $order->get_order_number();
+		}
+
+		return $repointed;
+	}
+
+	/**
+	 * Reject an admin-entered subscription id the pensopay account doesn't know (typos,
+	 * another account's id). Any failed lookup blocks the save, including a gateway
+	 * outage: the admin can retry, whereas a wrong id would silently break renewals.
+	 *
+	 * @param string $subscription_id
+	 *
+	 * @throws Exception
+	 */
+	protected static function assert_gateway_subscription_exists( string $subscription_id ): void {
+		try {
+			// A failed lookup here must not mark the API as unavailable for the rest of the request.
+			$response = Pensopay_Api::without_availability_kill_switch(
+				static function () use ( $subscription_id ) {
+					return Pensopay_Api::get( 'subscriptions/' . rawurlencode( $subscription_id ) );
+				}
+			);
+		} catch ( \Throwable $e ) {
+			throw new Exception(
+				sprintf(
+					/* translators: 1: pensopay subscription id entered by the admin, 2: gateway error message */
+					__( 'PensoPay Subscription ID %1$s could not be verified on your pensopay account: %2$s', Pensopay_Payments_V2_Gateway::TEXT_DOMAIN ),
+					esc_html( $subscription_id ),
+					esc_html( $e->getMessage() )
+				)
+			);
+		}
+
+		if ( ! is_object( $response ) || empty( $response->id ) ) {
+			throw new Exception(
+				sprintf(
+					/* translators: %s: pensopay subscription id entered by the admin */
+					__( 'No subscription with PensoPay Subscription ID %s was found on your pensopay account.', Pensopay_Payments_V2_Gateway::TEXT_DOMAIN ),
+					esc_html( $subscription_id )
+				)
+			);
+		}
 	}
 
 	protected function get_gateway_method_identifier() {

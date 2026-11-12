@@ -1,5 +1,7 @@
 <?php
 
+defined( 'ABSPATH' ) || exit;
+
 class Pensopay_Admin_Order_Actions extends Pensopay_Payments_V2_Abstract {
 
 	public function hooks() {

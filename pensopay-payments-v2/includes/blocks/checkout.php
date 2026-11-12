@@ -2,6 +2,8 @@
 
 use Automattic\WooCommerce\Blocks\Payments\PaymentMethodRegistry;
 
+defined( 'ABSPATH' ) || exit;
+
 /**
  * Class Pensopay_Blocks
  *

@@ -1,5 +1,7 @@
 <?php
 
+defined( 'ABSPATH' ) || exit;
+
 class Pensopay_Api_Transaction extends Pensopay_Api {
 	protected bool $loaded_from_cache = false;
 

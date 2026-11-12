@@ -2,14 +2,14 @@
 # This file is distributed under the GPLv2.
 msgid ""
 msgstr ""
-"Project-Id-Version: pensopay Payments v2 2.1.7\n"
+"Project-Id-Version: pensopay Payments v2 2.1.8\n"
 "Report-Msgid-Bugs-To: https://github.com/pensopay/pensopay-woocommerce/issues\n"
 "Last-Translator: pensopay\n"
 "Language-Team: pensopay\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-11-09T12:06:00+00:00\n"
+"POT-Creation-Date: 2026-11-12T09:52:21+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: pensopay-payments-v2\n"
@@ -441,32 +441,32 @@ msgstr ""
 msgid "This is your payment link"
 msgstr ""
 
-#: includes/gateway.php:134
+#: includes/gateway.php:138
 msgid "View Documentation"
 msgstr ""
 
-#: includes/gateway.php:135
+#: includes/gateway.php:139
 msgid "Docs"
 msgstr ""
 
-#: includes/gateway.php:139
+#: includes/gateway.php:143
 msgid "Open a support request at wordpress.org"
 msgstr ""
 
-#: includes/gateway.php:140
+#: includes/gateway.php:144
 msgid "Support"
 msgstr ""
 
-#: includes/gateway.php:157
+#: includes/gateway.php:161
 msgid "View pensopay settings"
 msgstr ""
 
-#: includes/gateway.php:158
+#: includes/gateway.php:162
 msgid "Settings"
 msgstr ""
 
 #. translators: %1: woocommerce version
-#: includes/gateway.php:252
+#: includes/gateway.php:256
 #, php-format
 msgid "pensopay requires WooCommerce %1$s or greater to be installed and active."
 msgstr ""
@@ -514,8 +514,8 @@ msgid "Subscription payment authorized successfully"
 msgstr ""
 
 #: includes/gateway/types/subscription.php:225
-#: includes/methods/abstract.php:580
-#: includes/methods/abstract.php:668
+#: includes/methods/abstract.php:691
+#: includes/methods/abstract.php:779
 msgid "Payment completed."
 msgstr ""
 
@@ -529,39 +529,47 @@ msgstr ""
 msgid "Transaction ID cannot be empty"
 msgstr ""
 
-#: includes/helpers/localization.php:272
+#: includes/helpers/localization.php:288
+msgid "Payment method"
+msgstr ""
+
+#: includes/helpers/localization.php:290
+msgid "Payment method:"
+msgstr ""
+
+#: includes/helpers/localization.php:298
 msgid "Store Language"
 msgstr ""
 
-#: includes/helpers/localization.php:273
+#: includes/helpers/localization.php:299
 msgid "Danish"
 msgstr ""
 
-#: includes/helpers/localization.php:274
+#: includes/helpers/localization.php:300
 msgid "German"
 msgstr ""
 
-#: includes/helpers/localization.php:275
+#: includes/helpers/localization.php:301
 msgid "English"
 msgstr ""
 
-#: includes/helpers/localization.php:276
+#: includes/helpers/localization.php:302
 msgid "Faroese"
 msgstr ""
 
-#: includes/helpers/localization.php:277
+#: includes/helpers/localization.php:303
 msgid "French"
 msgstr ""
 
-#: includes/helpers/localization.php:278
+#: includes/helpers/localization.php:304
 msgid "Norwegian"
 msgstr ""
 
-#: includes/helpers/localization.php:279
+#: includes/helpers/localization.php:305
 msgid "Dutch"
 msgstr ""
 
-#: includes/helpers/localization.php:280
+#: includes/helpers/localization.php:306
 msgid "Swedish"
 msgstr ""
 
@@ -575,69 +583,107 @@ msgstr ""
 msgid "Automatically completing order status due to successful recurring payment"
 msgstr ""
 
+#: includes/methods/abstract.php:74
+msgid "PensoPay Subscription ID"
+msgstr ""
+
+#: includes/methods/abstract.php:101
+msgid "A \"PensoPay Subscription ID\" value is required."
+msgstr ""
+
+#. translators: 1: previous pensopay subscription id, 2: new pensopay subscription id
+#: includes/methods/abstract.php:118
+#, php-format
+msgid "PensoPay Subscription ID changed from %1$s to %2$s. The stored mandate was cleared."
+msgstr ""
+
+#. translators: %s: comma-separated list of order numbers, e.g. "#123, #124"
+#: includes/methods/abstract.php:128
+#, php-format
+msgid "Unpaid renewal orders updated: %s."
+msgstr ""
+
+#. translators: 1: previous pensopay subscription id, 2: new pensopay subscription id
+#: includes/methods/abstract.php:167
+#, php-format
+msgid "PensoPay Subscription ID changed from %1$s to %2$s on the subscription. This order now uses the new ID and its stored mandate was cleared."
+msgstr ""
+
+#. translators: 1: pensopay subscription id entered by the admin, 2: gateway error message
+#: includes/methods/abstract.php:147
+#, php-format
+msgid "PensoPay Subscription ID %1$s could not be verified on your pensopay account: %2$s"
+msgstr ""
+
+#. translators: %s: pensopay subscription id entered by the admin
+#: includes/methods/abstract.php:158
+#, php-format
+msgid "No subscription with PensoPay Subscription ID %s was found on your pensopay account."
+msgstr ""
+
 #. translators: %s: order id
-#: includes/methods/abstract.php:117
+#: includes/methods/abstract.php:228
 #, php-format
 msgid "Invalid payment link received from API for order -parent- #%1$s"
 msgstr ""
 
 #. translators: %s: order id
-#: includes/methods/abstract.php:151
+#: includes/methods/abstract.php:262
 #, php-format
 msgid "No transaction ID found for order: %s"
 msgstr ""
 
 #. translators: %s: refunded amount
-#: includes/methods/abstract.php:161
+#: includes/methods/abstract.php:272
 #, php-format
 msgid "Order refunded successfully. Refunded amount: %s"
 msgstr ""
 
-#: includes/methods/abstract.php:164
+#: includes/methods/abstract.php:275
 msgid "Order is in invalid state for refund."
 msgstr ""
 
 #. translators: %s: gateway callback event name
-#: includes/methods/abstract.php:394
+#: includes/methods/abstract.php:505
 #, php-format
 msgid "pensopay reported a failed/declined payment event (%s) for this order."
 msgstr ""
 
 #. translators: %s: transaction id
-#: includes/methods/abstract.php:480
+#: includes/methods/abstract.php:591
 #, php-format
 msgid "Payment authorized. Transaction ID: %s"
 msgstr ""
 
 #. translators: %1$s: captured amount, %2$s: transaction id
-#: includes/methods/abstract.php:594
+#: includes/methods/abstract.php:705
 #, php-format
 msgid "Payment captured. Amount: %1$s. Transaction ID: %2$s"
 msgstr ""
 
 #. translators: %s: order number
-#: includes/methods/abstract.php:1050
+#: includes/methods/abstract.php:1161
 #, php-format
 msgid "pensopay: order %s has no linked pensopay payment to capture (the renewal was never charged). No action taken."
 msgstr ""
 
 #. translators: %s: captured amount
-#: includes/methods/abstract.php:1066
+#: includes/methods/abstract.php:1177
 #, php-format
 msgid "Payment captured automatically. Captured amount: %s"
 msgstr ""
 
 #. translators: 1: order number, 2: payment state
-#: includes/methods/abstract.php:1073
+#: includes/methods/abstract.php:1184
 #, php-format
 msgid "Action: \"capture\", is not allowed for order #%1$s, with state \"%2$s\""
 msgstr ""
 
-#: includes/methods/abstract.php:1080
+#: includes/methods/abstract.php:1191
 msgid "Capture failed"
 msgstr ""
 
-#: includes/methods/abstract.php:1124
+#: includes/methods/abstract.php:1235
 msgid "pensopay: Subscription cancelled on gateway."
 msgstr ""
 

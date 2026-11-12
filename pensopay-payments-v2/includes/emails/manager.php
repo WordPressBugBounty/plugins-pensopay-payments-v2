@@ -1,5 +1,7 @@
 <?php
 
+defined( 'ABSPATH' ) || exit;
+
 class Pensopay_Payments_V2_Emails_Manager extends Pensopay_Payments_V2_Abstract {
 	protected static $_instance;
 

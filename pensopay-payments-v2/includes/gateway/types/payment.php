@@ -1,5 +1,7 @@
 <?php
 
+defined( 'ABSPATH' ) || exit;
+
 class Pensopay_Api_Payment extends Pensopay_Api_Transaction {
 
 	const OUTCOME_SUCCESS   = 'success';

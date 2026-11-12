@@ -1130,7 +1130,7 @@ msgstr "Transaktions-ID"
 
 #: views/html-order-actions.php:97
 msgid "Subscription ID"
-msgstr "Beskrivelse"
+msgstr "Abonnements-ID"
 
 #: views/html-order-actions.php:105
 msgid "Transaction Order ID"
@@ -1181,6 +1181,68 @@ msgstr ""
 #: views/html-subscription-table-transaction-data.php:37
 msgid "Cached"
 msgstr "Cached"
+
+#: includes/methods/abstract.php
+msgid "PensoPay Subscription ID"
+msgstr "PensoPay Abonnements-ID"
+
+#: includes/methods/abstract.php
+msgid "A \"PensoPay Subscription ID\" value is required."
+msgstr "Der kræves en værdi for \"PensoPay Abonnements-ID\"."
+
+#. translators: 1: previous pensopay subscription id, 2: new pensopay subscription id
+#: includes/methods/abstract.php
+#, php-format
+msgid ""
+"PensoPay Subscription ID changed from %1$s to %2$s. The stored mandate was "
+"cleared."
+msgstr ""
+"PensoPay Abonnements-ID ændret fra %1$s til %2$s. Det gemte mandat blev "
+"fjernet."
+
+#. translators: %s: comma-separated list of order numbers, e.g. "#123, #124"
+#: includes/methods/abstract.php
+#, php-format
+msgid "Unpaid renewal orders updated: %s."
+msgstr "Ubetalte fornyelsesordrer opdateret: %s."
+
+#. translators: 1: previous pensopay subscription id, 2: new pensopay subscription id
+#: includes/methods/abstract.php
+#, php-format
+msgid ""
+"PensoPay Subscription ID changed from %1$s to %2$s on the subscription. This "
+"order now uses the new ID and its stored mandate was cleared."
+msgstr ""
+"PensoPay Abonnements-ID ændret fra %1$s til %2$s på abonnementet. Denne "
+"ordre bruger nu det nye ID, og det gemte mandat blev fjernet."
+
+#. translators: 1: pensopay subscription id entered by the admin, 2: gateway error message
+#: includes/methods/abstract.php
+#, php-format
+msgid ""
+"PensoPay Subscription ID %1$s could not be verified on your pensopay account: "
+"%2$s"
+msgstr ""
+"PensoPay Abonnements-ID %1$s kunne ikke verificeres på din pensopay-konto: "
+"%2$s"
+
+#. translators: %s: pensopay subscription id entered by the admin
+#: includes/methods/abstract.php
+#, php-format
+msgid ""
+"No subscription with PensoPay Subscription ID %s was found on your pensopay "
+"account."
+msgstr ""
+"Der blev ikke fundet noget abonnement med PensoPay Abonnements-ID %s på din "
+"pensopay-konto."
+
+#: includes/helpers/localization.php
+msgid "Payment method"
+msgstr "Betalingsmetode"
+
+#: includes/helpers/localization.php
+msgid "Payment method:"
+msgstr "Betalingsmetode:"
 
 #~ msgid "VippsMobilePay ePayment"
 #~ msgstr "VippsMobilePay"

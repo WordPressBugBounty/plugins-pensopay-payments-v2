@@ -267,6 +267,32 @@ class Pensopay_Payments_V2_Helpers_Localization {
 		return $alpha2;
 	}
 
+	/**
+	 * Fallback translation for WooCommerce Subscriptions strings shown next to this plugin's
+	 * fields, e.g. the "Payment method" label above the "PensoPay Subscription ID" field on the
+	 * subscription Billing tab. WCS is not on wordpress.org, so sites often lack its language
+	 * pack. Only applies while WCS left the string untranslated; a real WCS translation wins.
+	 *
+	 * @param string $translation
+	 * @param string $text
+	 *
+	 * @return string
+	 */
+	public static function translate_subscriptions_fallback( $translation, $text ) {
+		if ( $translation !== $text ) {
+			return $translation;
+		}
+
+		switch ( $text ) {
+			case 'Payment method':
+				return __( 'Payment method', Pensopay_Payments_V2_Gateway::TEXT_DOMAIN );
+			case 'Payment method:':
+				return __( 'Payment method:', Pensopay_Payments_V2_Gateway::TEXT_DOMAIN );
+		}
+
+		return $translation;
+	}
+
 	public static function getSupportedLanguages(): array {
 		return [
 			'calc' => __( 'Store Language', Pensopay_Payments_V2_Gateway::TEXT_DOMAIN ),

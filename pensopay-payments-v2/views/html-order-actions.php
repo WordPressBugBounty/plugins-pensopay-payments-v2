@@ -85,7 +85,7 @@
                 <strong><?php echo esc_attr( $transaction_id ); ?></strong>
                 <?php if ( ! empty( $transaction_brand ) ): ?>
                     <img style="margin-bottom: -5px;"
-                         src="<?php echo $transaction_brand_logo_url  ?>"
+						src="<?php echo esc_url( $transaction_brand_logo_url ); ?>"
                          width="30"/>
                 <?php endif ?>
             </small>

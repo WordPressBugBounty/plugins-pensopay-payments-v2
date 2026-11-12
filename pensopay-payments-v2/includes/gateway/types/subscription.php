@@ -1,5 +1,7 @@
 <?php
 
+defined( 'ABSPATH' ) || exit;
+
 class Pensopay_Api_Subscription extends Pensopay_Api_Transaction {
 
 	protected string $payment_id = '';

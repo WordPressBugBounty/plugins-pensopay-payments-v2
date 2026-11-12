@@ -3,6 +3,8 @@
 use Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType;
 use Automattic\WooCommerce\Container;
 
+defined( 'ABSPATH' ) || exit;
+
 if ( class_exists( 'Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType' ) ) {
 	class Pensopay_Gateway_Block extends AbstractPaymentMethodType {
 
