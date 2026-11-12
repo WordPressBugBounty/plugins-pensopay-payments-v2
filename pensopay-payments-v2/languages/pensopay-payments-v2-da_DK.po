@@ -1061,10 +1061,17 @@ msgstr "Hej %s,"
 #: templates/woocommerce/emails/customer-pensopay-payment-link.php:29
 #: templates/woocommerce/emails/plain/customer-pensopay-payment-link.php:27
 msgid "Thank you for your order."
-msgstr ""
+msgstr "Tak for din ordre."
 
 #. translators: %s: Payment link to pay the order
-#: templates/woocommerce/emails/customer-pensopay-payment-link.php:32
+#: templates/woocommerce/emails/customer-pensopay-payment-link.php:31
+msgid "Click the button below to pay and complete your order."
+msgstr "Klik på knappen nedenfor for at betale og fuldføre din ordre."
+
+#: templates/woocommerce/emails/customer-pensopay-payment-link.php:40
+msgid "Pay for your order"
+msgstr "Betal din ordre"
+
 #: templates/woocommerce/emails/plain/customer-pensopay-payment-link.php:30
 #, php-format
 msgid "Use the following link to pay and complete your order: %s"
@@ -1073,7 +1080,7 @@ msgstr "Benyt følgende link for at betale og fuldføre din ordre: %s"
 #: templates/woocommerce/emails/customer-pensopay-payment-link.php:56
 #: templates/woocommerce/emails/plain/customer-pensopay-payment-link.php:55
 msgid "Thanks for shopping with us."
-msgstr ""
+msgstr "Tak fordi du handlede hos os."
 
 #: views/html-order-actions.php:12
 msgid "Current payment state"

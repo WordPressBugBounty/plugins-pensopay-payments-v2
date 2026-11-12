@@ -1182,8 +1182,9 @@ abstract class Pensopay_Payments_V2_Methods_Abstract extends WC_Payment_Gateway 
 		foreach ( $order->get_items() as $order_item ) {
 			$product = $order_item->get_product();
 
-			// Is this product virtual?
-			if ( $product instanceof WC_Product && $product->is_virtual() ) {
+			// Downloadable products are digital goods too, even when not flagged as virtual,
+			// so they follow the virtual autocapture setting.
+			if ( $product instanceof WC_Product && ( $product->is_virtual() || $product->is_downloadable() ) ) {
 				$has_virtual_products = true;
 			} else {
 				$has_physical_products = true;

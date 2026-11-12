@@ -27,7 +27,7 @@ echo sprintf( esc_html__( 'Hi %s,', Pensopay_Payments_V2_Gateway::TEXT_DOMAIN ),
 echo esc_html__( 'Thank you for your order.', Pensopay_Payments_V2_Gateway::TEXT_DOMAIN ) . "\n\n";
 
 /* translators: %s: Payment link to pay the order */
-echo sprintf( esc_html__( 'Use the following link to pay and complete your order: %s', Pensopay_Payments_V2_Gateway::TEXT_DOMAIN ), esc_attr( $payment_link ) ) . "\n\n";
+echo sprintf( esc_html__( 'Use the following link to pay and complete your order: %s', Pensopay_Payments_V2_Gateway::TEXT_DOMAIN ), esc_url_raw( $payment_link ) ) . "\n\n";
 
 echo "=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\n\n";
 

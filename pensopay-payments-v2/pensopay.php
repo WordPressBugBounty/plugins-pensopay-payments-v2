@@ -4,7 +4,7 @@
  * Plugin Name: pensopay Payments v2
  * Plugin URI: http://wordpress.org/plugins/pensopay/
  * Description: Integrates your pensopay v2 payment gateway into your WooCommerce installation.
- * Version: 2.1.7
+ * Version: 2.1.8
  * Author: pensopay
  * Text Domain: pensopay-payments-v2
  * Domain Path: /languages/
@@ -15,7 +15,7 @@
  * Tested up to: 7.1.4
  * Requires PHP: 7.4
  * WC requires at least: 8.2
- * WC tested up to: 11.2.1
+ * WC tested up to: 11.2.2
  * Requires Plugins: woocommerce
  */
 
@@ -23,7 +23,7 @@ use Automattic\WooCommerce\Utilities\FeaturesUtil;
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'PENSOPAY_PAYMENTS_V2_VERSION', '2.1.7' );
+define( 'PENSOPAY_PAYMENTS_V2_VERSION', '2.1.8' );
 define( 'PENSOPAY_PAYMENTS_V2_WC_MIN_VER', '8.2' );
 define( 'PENSOPAY_PAYMENTS_V2_PLUGIN_FILE', __FILE__ );
 define( 'PPV2_PATH', plugin_dir_path( __FILE__ ) );
